@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"C:\\\\Users\\\\sudhe\\\\HDMWebsite\")",
+      "Bash(identify /c/Users/sudhe/HDMWebsite/IMG_2327.JPG.jpeg)"
+    ]
+  }
+}
