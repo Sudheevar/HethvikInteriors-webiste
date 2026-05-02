@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hethvik Interiors — Explore our portfolio of award-winning interior design projects across Hyderabad.">
+  <title>Projects | Hethvik Interiors</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- AOS -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/projects.css">
+</head>
+<body>
+
+  <!-- ─── Navbar ─────────────────────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="IMG_2327.JPG.jpeg" alt="Hethvik Interiors Logo" class="nav-logo-img">
+        <div class="nav-logo-text">
+          Hethvik
+          <span class="nav-logo-sub">Interiors</span>
+        </div>
+      </a>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html#services" class="nav-link">Services</a>
+        <a href="index.html#why-us"   class="nav-link">Why Us</a>
+        <a href="index.html#contact"  class="nav-link">Contact</a>
+        <a href="projects.html"       class="nav-link active">Projects</a>
+        <a href="login.html"          class="nav-link nav-link-cta">Employee Login</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── Mobile Menu ─────────────────────────────────────────── -->
+  <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true">
+    <a href="index.html#services" class="mobile-nav-link" data-mobile-link>Services</a>
+    <a href="index.html#why-us"   class="mobile-nav-link" data-mobile-link>Why Us</a>
+    <a href="index.html#contact"  class="mobile-nav-link" data-mobile-link>Contact</a>
+    <a href="projects.html"       class="mobile-nav-link" data-mobile-link>Projects</a>
+    <a href="login.html"          class="mobile-nav-link" data-mobile-link style="color: var(--gold);">Employee Login</a>
+  </div>
+
+  <!-- ─── Page Banner ─────────────────────────────────────────── -->
+  <section class="projects-banner">
+    <div class="projects-banner-noise"></div>
+    <div class="container">
+      <p class="section-eyebrow" data-aos="fade-up">Our Portfolio</p>
+      <h1 class="banner-title" data-aos="fade-up" data-aos-delay="80">Our Projects</h1>
+      <div class="gold-divider center" data-aos="fade-up" data-aos-delay="160"></div>
+      <p class="banner-sub" data-aos="fade-up" data-aos-delay="240">
+        From intimate residences to landmark commercial spaces —<br>
+        every project is a story we are proud to tell.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── Arc + Details Section ───────────────────────────────── -->
+  <section class="arc-section" id="projects-arc">
+
+    <!-- Semicircular arc stage (thumbnails on curved rail) -->
+    <div class="arc-stage" id="arcStage">
+      <!-- .arc-card elements injected by projects.js -->
+    </div>
+
+    <!-- Navigation controls below arc -->
+    <div class="arc-controls">
+      <button class="arc-btn arc-prev" id="arcPrev" aria-label="Previous project">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="arc-counter" id="arcCounter">1 / 6</span>
+      <button class="arc-btn arc-next" id="arcNext" aria-label="Next project">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Gold separator -->
+    <div class="arc-divider"></div>
+
+    <!-- Inline project details (photo left, info right) -->
+    <div class="project-details" id="projectDetails">
+
+      <!-- Left: auto-sliding photo gallery -->
+      <div class="details-slider-col">
+        <div class="details-slider" id="detailsSlider">
+          <!-- .details-slide divs injected by JS -->
+          <div class="slider-progress" id="sliderProgress"></div>
+          <div class="slider-dots"     id="sliderDots"></div>
+        </div>
+      </div>
+
+      <!-- Right: project info -->
+      <div class="details-info-col" id="detailsInfoCol">
+        <span class="details-category section-eyebrow" id="detailsCategory"></span>
+        <h2 class="details-title" id="detailsTitle"></h2>
+
+        <div class="details-meta">
+          <span class="details-meta-item">
+            <i class="fa-solid fa-user"></i>
+            <span id="detailsClient"></span>
+          </span>
+          <span class="details-meta-item">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="detailsYear"></span>
+          </span>
+          <span class="details-meta-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <span id="detailsLocation"></span>
+          </span>
+        </div>
+
+        <div class="gold-divider"></div>
+
+        <div class="details-specs-grid" id="detailsSpecs">
+          <!-- spec-item rows injected by JS -->
+        </div>
+
+        <div class="details-tags-block">
+          <p class="section-eyebrow">Rooms Designed</p>
+          <div class="tag-group" id="detailsRooms"></div>
+        </div>
+
+        <div class="details-tags-block">
+          <p class="section-eyebrow">Materials &amp; Finishes</p>
+          <div class="tag-group" id="detailsMaterials"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Footer ──────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+
+        <div class="footer-brand" data-aos="fade-up">
+          <img src="IMG_2327.JPG.jpeg" alt="Hethvik Interiors" class="footer-logo">
+          <p class="footer-tagline">"Crafting spaces that breathe, inspire, and endure."</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="100">
+          <p class="footer-heading">Quick Links</p>
+          <div class="footer-links">
+            <a href="index.html"              class="footer-link">Home</a>
+            <a href="index.html#services"     class="footer-link">Services</a>
+            <a href="projects.html"           class="footer-link">Projects</a>
+            <a href="index.html#why-us"       class="footer-link">Why Us</a>
+            <a href="index.html#contact"      class="footer-link">Contact</a>
+            <a href="login.html"              class="footer-link">Employee Login</a>
+          </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="200">
+          <p class="footer-heading">Services</p>
+          <div class="footer-links">
+            <a href="index.html#services" class="footer-link">Living Room</a>
+            <a href="index.html#services" class="footer-link">Kitchen &amp; Dining</a>
+            <a href="index.html#services" class="footer-link">Bedroom</a>
+            <a href="index.html#services" class="footer-link">Commercial</a>
+            <a href="index.html#services" class="footer-link">Modular Furniture</a>
+            <a href="index.html#services" class="footer-link">Lighting Design</a>
+          </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="300">
+          <p class="footer-heading">Contact Us</p>
+          <div class="footer-contact-item">
+            <i class="fa-solid fa-phone"></i>
+            <a href="tel:+919876543210" class="footer-link" style="color:rgba(255,255,255,0.5)">+91 98765 43210</a>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fa-solid fa-envelope"></i>
+            <a href="mailto:info@hethvikinteriors.com" class="footer-link" style="color:rgba(255,255,255,0.5)">info@hethvikinteriors.com</a>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Hyderabad, Telangana,<br>India</span>
+          </div>
+          <div class="footer-contact-item" style="margin-top:1.25rem;">
+            <i class="fa-regular fa-clock"></i>
+            <span>Mon–Sat: 9 AM – 7 PM</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+        <p class="footer-copy">&copy; 2025 Hethvik Interiors. All rights reserved.</p>
+        <p class="footer-badge">Crafting extraordinary spaces since 2015</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── Scripts ─────────────────────────────────────────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+  <script src="js/nav.js"></script>
+  <script src="js/projects.js"></script>
+
+</body>
+</html>
