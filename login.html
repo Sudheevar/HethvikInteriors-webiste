@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hethvik Interiors — Employee Portal">
+  <title>Employee Login | Hethvik Interiors</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-page">
+
+  <!-- ─── Login Screen ──────────────────────────────────────────── -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-bg-orb orb-1"></div>
+    <div class="login-bg-orb orb-2"></div>
+    <div class="login-bg-orb orb-3"></div>
+
+    <div class="login-card" id="loginCard">
+      <a href="index.html" class="login-back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to site
+      </a>
+      <img src="IMG_2327.JPG.jpeg" alt="Hethvik Interiors" class="login-logo">
+      <h1 class="login-brand">Hethvik <span>Interiors</span></h1>
+      <p class="login-sub section-eyebrow">Employee Portal</p>
+      <div class="gold-divider center" style="margin: 1.25rem auto 1.75rem;"></div>
+
+      <form id="loginForm" autocomplete="off" novalidate>
+        <div class="form-group">
+          <label for="loginUser"><i class="fa-solid fa-user"></i> Employee ID</label>
+          <input type="text" id="loginUser" placeholder="Enter your employee ID" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPass"><i class="fa-solid fa-lock"></i> Password</label>
+          <div class="password-wrap">
+            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+            <button type="button" class="toggle-pass" id="togglePass" aria-label="Show password">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <p class="login-error" id="loginError" aria-live="polite"></p>
+        <button type="submit" class="btn btn-gold login-submit" id="loginSubmit">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ─── Admin Dashboard ───────────────────────────────────────── -->
+  <section id="adminDashboard" class="admin-dashboard" style="display:none">
+
+    <!-- Admin Navbar -->
+    <nav class="admin-nav" id="adminNav">
+      <div class="admin-nav-brand">
+        <img src="IMG_2327.JPG.jpeg" alt="Hethvik" class="admin-logo">
+        <div class="admin-brand-text">
+          Hethvik <span>Admin</span>
+        </div>
+      </div>
+
+      <div class="admin-nav-tabs" id="adminTabs">
+        <button class="admin-tab active" data-tab="quotations">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span>Quotations</span>
+        </button>
+        <button class="admin-tab" data-tab="bills">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Bills</span>
+        </button>
+        <button class="admin-tab" data-tab="projects">
+          <i class="fa-solid fa-images"></i>
+          <span>Projects</span>
+        </button>
+      </div>
+
+      <div class="admin-nav-right">
+        <a href="index.html" class="btn btn-outline admin-site-link">
+          <i class="fa-solid fa-globe"></i> View Site
+        </a>
+        <button id="logoutBtn" class="btn btn-outline admin-logout">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </nav>
+
+    <!-- ─── TAB: QUOTATIONS ──────────────────────────────────────── -->
+    <div class="tab-panel" id="tabQuotations">
+      <div class="admin-split">
+
+        <!-- Builder Column -->
+        <div class="builder-col" id="quotationBuilder">
+          <div class="builder-header">
+            <div>
+              <h2 class="builder-title" id="builderTitle">New Quotation</h2>
+              <p class="builder-subtitle">Fill in the details below</p>
+            </div>
+            <span class="quote-id-badge" id="quoteIdBadge">HI-2025-XXXX</span>
+          </div>
+
+          <!-- Client Details -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Client Details</p>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Client Name <span class="required">*</span></label>
+                <input type="text" id="qClientName" placeholder="Mr. Sharma">
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="qClientPhone" placeholder="+91 98765 43210">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Address / Project Location</label>
+              <input type="text" id="qClientAddress" placeholder="Jubilee Hills, Hyderabad">
+            </div>
+          </div>
+
+          <!-- Line Items -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Line Items</p>
+            <div class="items-table-wrap">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th style="width:22%">Place</th>
+                    <th style="width:12%">Sqft</th>
+                    <th style="width:30%">Material</th>
+                    <th style="width:14%">₹ / Sqft</th>
+                    <th style="width:14%">Total</th>
+                    <th style="width:8%"></th>
+                  </tr>
+                </thead>
+                <tbody id="itemsBody">
+                  <!-- rows injected by JS -->
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn-add-item" id="addItemBtn">
+              <i class="fa-solid fa-plus"></i> Add Line Item
+            </button>
+          </div>
+
+          <!-- Totals -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Pricing Summary</p>
+            <div class="form-row-2" style="margin-bottom:1rem;">
+              <div class="form-group">
+                <label>Discount (₹)</label>
+                <input type="number" id="qDiscount" value="0" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label>GST (%)</label>
+                <input type="number" id="qGst" value="18" min="0" max="100" placeholder="18">
+              </div>
+            </div>
+            <div class="totals-summary" id="totalsSummary">
+              <div class="totals-row"><span>Subtotal</span><span id="tSubtotal">₹0</span></div>
+              <div class="totals-row"><span>Discount</span><span id="tDiscount" class="discount-val">−₹0</span></div>
+              <div class="totals-row"><span>GST (<span id="tGstPct">18</span>%)</span><span id="tGst">₹0</span></div>
+              <div class="totals-row grand"><span>Grand Total</span><span id="tGrand">₹0</span></div>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Terms &amp; Conditions / Notes</p>
+            <div class="form-group">
+              <textarea id="qNotes" rows="5" placeholder="1. This quotation is valid for 30 days from the date of issue.
+2. 50% advance payment required to commence work.
+3. Material prices subject to market variation.
+4. GST applicable as per government norms."></textarea>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="builder-actions">
+            <button class="btn btn-gold" id="saveQuoteBtn">
+              <i class="fa-solid fa-floppy-disk"></i> Save Quotation
+            </button>
+            <button class="btn btn-outline" id="saveDraftBtn">
+              <i class="fa-regular fa-floppy-disk"></i> Save Draft
+            </button>
+            <button class="btn btn-outline" id="printQuoteBtn">
+              <i class="fa-solid fa-download"></i> Download PDF
+            </button>
+            <button class="btn-clear" id="clearBuilderBtn">
+              <i class="fa-solid fa-rotate-left"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- List Column -->
+        <div class="list-col">
+          <div class="list-header">
+            <h3 class="list-heading">Saved Quotations</h3>
+            <div class="list-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" id="quoteSearch" placeholder="Search by client or ID…">
+            </div>
+          </div>
+          <div class="quote-list" id="quoteList">
+            <div class="list-empty" id="quoteEmpty">
+              <i class="fa-solid fa-file-circle-plus"></i>
+              <p>No quotations yet.<br>Create your first one.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── TAB: BILLS ────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tabBills" style="display:none">
+      <div class="admin-split">
+
+        <!-- Bill Preview Column -->
+        <div class="builder-col">
+          <div id="billPreviewArea">
+            <div class="bill-preview-empty" id="billPreviewEmpty">
+              <i class="fa-solid fa-receipt"></i>
+              <p>Select a bill from the list<br>to preview details</p>
+            </div>
+            <div id="billDetail" style="display:none">
+              <div class="builder-header">
+                <div>
+                  <h2 class="builder-title" id="billDetailTitle">Final Bill</h2>
+                  <p class="builder-subtitle" id="billDetailClient"></p>
+                </div>
+                <span class="quote-id-badge bill-badge" id="billDetailNo"></span>
+              </div>
+              <div class="bill-meta-grid" id="billMetaGrid"></div>
+              <div class="builder-section">
+                <p class="section-eyebrow">Line Items</p>
+                <div class="items-table-wrap">
+                  <table class="items-table">
+                    <thead>
+                      <tr>
+                        <th>Place</th><th>Sqft</th><th>Material</th>
+                        <th>₹/Sqft</th><th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="billItemsBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="totals-summary" id="billTotalsDisplay" style="margin-top:1rem;"></div>
+              <div class="builder-actions" style="margin-top:1.5rem;">
+                <button class="btn btn-gold" id="printBillBtn">
+                  <i class="fa-solid fa-download"></i> Download PDF
+                </button>
+                <button class="btn btn-outline" id="markPaidBtn">
+                  <i class="fa-solid fa-circle-check"></i> Mark as Paid
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bills List Column -->
+        <div class="list-col">
+          <div class="list-header">
+            <h3 class="list-heading">Final Bills</h3>
+            <div class="list-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" id="billSearch" placeholder="Search by client or bill no…">
+            </div>
+          </div>
+          <div class="bill-list" id="billList">
+            <div class="list-empty" id="billEmpty">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <p>No bills yet.<br>Convert a quotation to create one.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── TAB: PROJECTS ─────────────────────────────────────────── -->
+    <div class="tab-panel" id="tabProjects" style="display:none">
+      <div class="admin-split">
+
+        <!-- Project Upload Form -->
+        <div class="builder-col">
+          <div class="builder-header">
+            <div>
+              <h2 class="builder-title" id="projectBuilderTitle">Add New Project</h2>
+              <p class="builder-subtitle">Upload portfolio project details</p>
+            </div>
+            <input type="hidden" id="editingProjectId" value="">
+          </div>
+
+          <div class="builder-section">
+            <p class="section-eyebrow">Basic Info</p>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Title <span class="required">*</span></label>
+                <input type="text" id="pTitle" placeholder="Jubilee Hills Villa">
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="pCategory">
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Client Name</label>
+                <input type="text" id="pClient" placeholder="Mr. & Mrs. Sharma">
+              </div>
+              <div class="form-group">
+                <label>Year</label>
+                <input type="text" id="pYear" placeholder="2024">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="pLocation" placeholder="Jubilee Hills, Hyderabad">
+              </div>
+              <div class="form-group">
+                <label>Area</label>
+                <input type="text" id="pArea" placeholder="2,800 sq ft">
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Budget</label>
+                <input type="text" id="pBudget" placeholder="₹40–60 Lakhs">
+              </div>
+              <div class="form-group">
+                <label>Design Style</label>
+                <input type="text" id="pStyle" placeholder="Contemporary Luxury">
+              </div>
+            </div>
+          </div>
+
+          <div class="builder-section">
+            <p class="section-eyebrow">Photos (Image URLs)</p>
+            <div class="form-group">
+              <label>Thumbnail URL <span class="required">*</span></label>
+              <input type="url" id="pThumb" placeholder="https://images.unsplash.com/…?w=800">
+            </div>
+            <div id="photoUrlsList">
+              <!-- extra URL inputs injected by JS -->
+            </div>
+            <button class="btn-add-item" id="addPhotoBtn">
+              <i class="fa-solid fa-plus"></i> Add Photo URL
+            </button>
+          </div>
+
+          <div class="builder-section">
+            <p class="section-eyebrow">Rooms Designed</p>
+            <div class="form-group">
+              <label>Comma-separated list</label>
+              <input type="text" id="pRooms" placeholder="Living Room, Master Bedroom, Modular Kitchen">
+            </div>
+          </div>
+
+          <div class="builder-section">
+            <p class="section-eyebrow">Materials &amp; Finishes</p>
+            <div class="form-group">
+              <label>Comma-separated list</label>
+              <input type="text" id="pMaterials" placeholder="Italian Marble, Walnut Panels, Brass Fixtures">
+            </div>
+          </div>
+
+          <div class="builder-section">
+            <p class="section-eyebrow">Add Client Review (Optional)</p>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Reviewer Name</label>
+                <input type="text" id="rName" placeholder="Mr. Sharma">
+              </div>
+              <div class="form-group">
+                <label>Rating (1–5)</label>
+                <input type="number" id="rRating" value="5" min="1" max="5">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Review Date</label>
+              <input type="text" id="rDate" placeholder="March 2024">
+            </div>
+            <div class="form-group">
+              <label>Review Text</label>
+              <textarea id="rQuote" rows="3" placeholder="Exceptional work, every detail was perfect…"></textarea>
+            </div>
+          </div>
+
+          <div class="builder-actions">
+            <button class="btn btn-gold" id="saveProjectBtn">
+              <i class="fa-solid fa-floppy-disk"></i> Save Project
+            </button>
+            <button class="btn-clear" id="clearProjectBtn">
+              <i class="fa-solid fa-rotate-left"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Projects List Column -->
+        <div class="list-col">
+          <div class="list-header">
+            <h3 class="list-heading">Portfolio Projects</h3>
+            <p class="list-sub" id="projectsCountLabel">0 projects</p>
+          </div>
+          <div class="project-admin-list" id="projectAdminList">
+            <!-- project-admin-card items injected by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── Toast Container ───────────────────────────────────────── -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ─── Print Template (hidden, populated before print) ─────── -->
+  <div id="printTemplate" class="print-only" style="display:none"></div>
+
+  <!-- ─── Scripts ─────────────────────────────────────────────── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="js/login.js"></script>
+
+</body>
+</html>

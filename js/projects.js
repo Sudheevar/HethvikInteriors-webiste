@@ -8,7 +8,7 @@
   /* ═══════════════════════════════════════════════════════════════
      PROJECT DATA  (placeholder — swap in real photos + details)
      ═══════════════════════════════════════════════════════════════ */
-  const projects = [
+  const HARDCODED_PROJECTS = [
     {
       id: 1,
       title: 'Jubilee Hills Villa',
@@ -160,6 +160,7 @@
       ],
     },
   ];
+  const projects = JSON.parse(localStorage.getItem('hethvik_projects') || 'null') || HARDCODED_PROJECTS;
 
   /* ═══════════════════════════════════════════════════════════════
      DOM REFERENCES
