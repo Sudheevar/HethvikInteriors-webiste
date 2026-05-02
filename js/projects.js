@@ -28,6 +28,11 @@
         'https://images.unsplash.com/photo-1615873968403-89e068629265?w=1400&q=80',
         'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1400&q=80',
       ],
+      reviews: [
+        { name: 'Anil Sharma', rating: 5, date: 'March 2024', quote: 'Hethvik transformed our home beyond our expectations. Every detail was thoughtfully crafted — from the marble inlays to the lighting design. Truly world-class.' },
+        { name: 'Sunita Sharma', rating: 5, date: 'March 2024', quote: 'The team listened to every request and delivered a space that feels like us. We get compliments from every guest who visits.' },
+        { name: 'Rohan Mehta', rating: 5, date: 'April 2024', quote: 'Impeccable quality, flawless execution, and delivered on time. Worth every rupee spent.' },
+      ],
     },
     {
       id: 2,
@@ -47,6 +52,11 @@
         'https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1400&q=80',
         'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1400&q=80',
         'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1400&q=80',
+      ],
+      reviews: [
+        { name: 'Vikram Nanda', rating: 5, date: 'Nov 2023', quote: 'Our office now feels like a premium workspace that genuinely impresses clients. The reception area alone has changed how people perceive our brand.' },
+        { name: 'Deepa Rao', rating: 5, date: 'Nov 2023', quote: 'The team handled the entire project with minimal disruption to our operations. Professional, on-budget, and stunning results.' },
+        { name: 'Sanjay Kapoor', rating: 4, date: 'Dec 2023', quote: 'Excellent sense of space planning. The open-floor layout they designed has boosted team collaboration enormously.' },
       ],
     },
     {
@@ -68,6 +78,11 @@
         'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1400&q=80',
         'https://images.unsplash.com/photo-1615873968403-89e068629265?w=1400&q=80',
       ],
+      reviews: [
+        { name: 'Ravi Kumar', rating: 5, date: 'Jan 2024', quote: 'They turned my modest 1650 sq ft apartment into something I am proud to show off. Minimalist, clean, and incredibly functional.' },
+        { name: 'Preethi Kumar', rating: 5, date: 'Feb 2024', quote: 'The study room design is perfect for work-from-home. Smart use of every corner without making it feel cramped.' },
+        { name: 'Karthik Iyer', rating: 4, date: 'Feb 2024', quote: 'Great communication throughout the project. They stuck to the timeline which I really appreciated.' },
+      ],
     },
     {
       id: 4,
@@ -87,6 +102,11 @@
         'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1400&q=80',
         'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1400&q=80',
         'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1400&q=80',
+      ],
+      reviews: [
+        { name: 'Priya Reddy', rating: 5, date: 'Aug 2023', quote: 'The Art Deco revival theme was executed flawlessly. The gold leaf details in the dining room are simply breathtaking.' },
+        { name: 'Arjun Reddy', rating: 5, date: 'Aug 2023', quote: 'The home theatre room exceeded every expectation. Outstanding craftsmanship and a team that genuinely cares.' },
+        { name: 'Meena Pillai', rating: 5, date: 'Sept 2023', quote: 'A timeless design that honours the classic while feeling completely modern. Hethvik has an exceptional eye for detail.' },
       ],
     },
     {
@@ -108,6 +128,11 @@
         'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1400&q=80',
         'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1400&q=80',
       ],
+      reviews: [
+        { name: 'Aditya Nair', rating: 5, date: 'Feb 2024', quote: 'The penthouse feels like a five-star hotel now. The sky lounge with its panoramic lighting setup is the crown jewel.' },
+        { name: 'Kavya Nair', rating: 5, date: 'Feb 2024', quote: 'Calacatta marble throughout, seamless carpentry, and smart lighting that adapts to mood — this is luxury living redefined.' },
+        { name: 'Rahul Menon', rating: 5, date: 'March 2024', quote: 'Hethvik delivered a space that speaks volumes about class and sophistication. The attention to detail is unmatched.' },
+      ],
     },
     {
       id: 6,
@@ -127,6 +152,11 @@
         'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=80',
         'https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1400&q=80',
         'https://images.unsplash.com/photo-1630699144867-37acec97df5a?w=1400&q=80',
+      ],
+      reviews: [
+        { name: 'Suresh Verma', rating: 5, date: 'Oct 2022', quote: 'The showroom design has dramatically increased footfall. Clients now linger longer and our conversion rate has improved.' },
+        { name: 'Anita Verma', rating: 4, date: 'Oct 2022', quote: 'The VIP lounge sets exactly the right tone for premium customers. Polished concrete with leather accents is a bold but brilliant choice.' },
+        { name: 'Prakash Joshi', rating: 5, date: 'Nov 2022', quote: 'Every visiting brand representative has commented on the showroom design. It truly elevates our positioning in the market.' },
       ],
     },
   ];
@@ -149,6 +179,9 @@
   const detailsSpecs    = document.getElementById('detailsSpecs');
   const detailsRooms    = document.getElementById('detailsRooms');
   const detailsMaterials= document.getElementById('detailsMaterials');
+
+  // Reviews
+  const reviewsTrack  = document.getElementById('reviewsTrack');
 
   // Slider
   const detailsSlider = document.getElementById('detailsSlider');
@@ -288,6 +321,44 @@
 
     // Restart photo slider with new project's photos
     startSlider(p.photos);
+
+    // Update reviews
+    renderReviews(p.reviews, animate);
+  }
+
+  /* Build star HTML for a given rating (1-5) */
+  function starsHTML(rating) {
+    return Array.from({ length: 5 }, (_, i) =>
+      `<i class="fa-solid fa-star${i < rating ? '' : ' empty'}"></i>`
+    ).join('');
+  }
+
+  function renderReviews(reviews, animate) {
+    const dur = animate ? 0.28 : 0;
+
+    gsap.to(reviewsTrack, {
+      opacity: 0, y: -8, duration: dur,
+      onComplete() {
+        reviewsTrack.innerHTML = reviews.map(r => `
+          <div class="review-card">
+            <div class="review-stars">${starsHTML(r.rating)}</div>
+            <p class="review-quote">${r.quote}</p>
+            <div class="review-author">
+              <div class="review-avatar">${r.name.charAt(0)}</div>
+              <div>
+                <p class="review-name">${r.name}</p>
+                <p class="review-date">${r.date}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        gsap.fromTo(reviewsTrack,
+          { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: dur + 0.4, ease: 'power2.out' }
+        );
+      },
+    });
   }
 
   /* ═══════════════════════════════════════════════════════════════
