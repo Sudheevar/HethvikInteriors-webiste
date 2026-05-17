@@ -725,8 +725,9 @@
           <div class="print-company">
             <h1>Hethvik <span style="color:#C9A84C">Interiors</span></h1>
             <p>Premium Interior Design Studio</p>
-            <p>Hyderabad, Telangana, India</p>
-            <p>+91 98765 43210 &bull; info@hethvikinteriors.com</p>
+            <p>Office: Hethvik Decor Mart, Kada Agrahara, Near Modern Spaces, Bangalore &ndash; 562125</p>
+            <p>Factory: Hethvik Interiors Factory, Near Cambridge School, B. Hosahalli, Bangalore, Karnataka &ndash; 562125</p>
+            <p>+91 97045 20901 &bull; info@hethvikinteriors.com</p>
           </div>
           <div class="print-doc-type">
             <h2>${type}</h2>
@@ -793,7 +794,7 @@
         </div>` : ''}
 
         <div class="print-footer">
-          <span>Hethvik Interiors &bull; Hyderabad, India</span>
+          <span>Hethvik Interiors &bull; Kada Agrahara, Bangalore &ndash; 562125</span>
           <span>This is a computer-generated ${type.toLowerCase()}.</span>
         </div>
       </div>

@@ -1239,6 +1239,223 @@
   color: var(--charcoal);
 }
 
+/* ── Step 2: sqft slider ────────────────────────────────── */
+.quote-sqft-section {
+  background: linear-gradient(150deg, #ffffff 0%, var(--cream) 100%);
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  padding: 1.5rem 1.5rem 1.25rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.quote-sqft-label {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  margin-bottom: 0.35rem;
+}
+
+.quote-sqft-value {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 2.6rem);
+  font-weight: 700;
+  color: var(--charcoal);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.quote-sqft-unit {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  letter-spacing: 0.05em;
+}
+
+.quote-sqft-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--gray-300);
+  outline: none;
+  cursor: pointer;
+}
+
+.quote-sqft-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(201,168,76,0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.quote-sqft-slider::-webkit-slider-thumb:hover { transform: scale(1.12); }
+
+.quote-sqft-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(201,168,76,0.5);
+  cursor: pointer;
+}
+
+.quote-sqft-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 6px;
+  background: var(--gray-300);
+}
+
+.quote-sqft-range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  letter-spacing: 0.04em;
+}
+
+/* ── Step 2: package cards ──────────────────────────────── */
+.quote-packages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.quote-package {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.1rem 0.6rem 0.95rem;
+  background: var(--white);
+  border: 1.5px solid var(--gray-300);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: var(--t-fast);
+}
+
+.quote-package:hover {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.05);
+  transform: translateY(-2px);
+}
+
+.quote-package.selected {
+  border-color: var(--gold-dark);
+  background: linear-gradient(160deg, rgba(201,168,76,0.14) 0%, rgba(201,168,76,0.05) 100%);
+  box-shadow: 0 6px 22px rgba(201,168,76,0.28);
+}
+
+.quote-package-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.2rem 0.7rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--near-black);
+  font-family: var(--font-body);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 50px;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(201,168,76,0.4);
+}
+
+.quote-package-name {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.quote-package-rate {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold-dark);
+}
+
+.quote-package-rate small {
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.quote-package-tagline {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--gray-500);
+}
+
+/* ── Step 4: package tag, breakdown, highlights ─────────── */
+.quote-package-tag {
+  display: inline-block;
+  align-self: center;
+  margin: 0 auto 0.25rem;
+  padding: 0.3rem 1rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--near-black);
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 50px;
+  text-align: center;
+}
+
+.quote-result-title + .quote-package-tag { display: block; width: fit-content; }
+
+.quote-breakdown {
+  font-size: 0.86rem;
+  color: rgba(255,255,255,0.78);
+  margin-bottom: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.quote-package-highlights {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.quote-package-highlights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.86rem;
+  color: var(--charcoal);
+  line-height: 1.45;
+}
+
+.quote-package-highlights i {
+  color: var(--gold-dark);
+  font-size: 0.78rem;
+  margin-top: 0.22rem;
+  flex-shrink: 0;
+}
+
 body.modal-open { overflow: hidden; }
 
 @media (max-width: 540px) {
@@ -1246,4 +1463,14 @@ body.modal-open { overflow: hidden; }
   .quote-options { grid-template-columns: repeat(2, 1fr); }
   .quote-actions { flex-direction: column-reverse; }
   .quote-summary { grid-template-columns: 1fr; }
+  .quote-packages { grid-template-columns: 1fr; }
+  .quote-package {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    text-align: left;
+    padding: 0.9rem 1rem;
+  }
+  .quote-package-badge { left: auto; right: 0.8rem; transform: none; }
+  .quote-package-tagline { width: 100%; }
 }
