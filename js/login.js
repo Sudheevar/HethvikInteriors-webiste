@@ -4,11 +4,9 @@
   /* ═══════════════════════════════════════════════════════════════
      CONSTANTS
      ═══════════════════════════════════════════════════════════════ */
-  const CREDENTIALS = { id: 'admin', pass: 'hethvik2025' };
   const LS_QUOTES   = 'hethvik_quotes';
   const LS_BILLS    = 'hethvik_bills';
   const LS_PROJECTS = 'hethvik_projects';
-  const SS_AUTH     = 'hethvik_auth';
 
   const DEFAULT_TERMS = `1. This quotation is valid for 30 days from the date of issue.
 2. 50% advance payment required to commence work.
@@ -299,31 +297,60 @@
     renderProjectList();
   }
 
+  function friendlyAuthError(err) {
+    switch (err && err.code) {
+      case 'auth/invalid-email':          return 'Please enter a valid email address.';
+      case 'auth/user-disabled':          return 'This account has been disabled.';
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':     return 'Incorrect email or password.';
+      case 'auth/too-many-requests':      return 'Too many attempts. Please try again later.';
+      case 'auth/network-request-failed': return 'Network error. Check your connection.';
+      default:                            return 'Sign-in failed. Please try again.';
+    }
+  }
+
+  function shakeLoginCard() {
+    gsap.to(loginCard, {
+      keyframes: [{ x: -8 }, { x: 8 }, { x: -5 }, { x: 5 }, { x: 0 }],
+      duration: 0.4, ease: 'power2.out'
+    });
+  }
+
   loginForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    const id   = document.getElementById('loginUser').value.trim();
-    const pass = document.getElementById('loginPass').value;
+    const email = document.getElementById('loginUser').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    const btn   = document.getElementById('loginSubmit');
+    loginError.textContent = '';
 
-    if (id === CREDENTIALS.id && pass === CREDENTIALS.pass) {
-      sessionStorage.setItem(SS_AUTH, '1');
-      loginError.textContent = '';
-      gsap.to(loginCard, { opacity: 0, y: -20, duration: 0.35, ease: 'power2.in',
-        onComplete: showDashboard });
-    } else {
-      loginError.textContent = 'Invalid employee ID or password.';
-      gsap.to(loginCard, {
-        keyframes: [{ x: -8 }, { x: 8 }, { x: -5 }, { x: 5 }, { x: 0 }],
-        duration: 0.4, ease: 'power2.out'
-      });
+    if (!window.fb || !window.fb.auth) {
+      loginError.textContent = 'Authentication service unavailable. Check your connection.';
+      shakeLoginCard();
+      return;
     }
+
+    if (btn) btn.disabled = true;
+    window.fb.auth.signInWithEmailAndPassword(email, pass)
+      .then(function () {
+        loginError.textContent = '';
+        // onAuthStateChanged (see INIT) shows the dashboard.
+      })
+      .catch(function (err) {
+        loginError.textContent = friendlyAuthError(err);
+        shakeLoginCard();
+      })
+      .finally(function () {
+        if (btn) btn.disabled = false;
+      });
   });
 
   logoutBtn.addEventListener('click', function () {
-    sessionStorage.removeItem(SS_AUTH);
     gsap.to(adminDashboard, { opacity: 0, duration: 0.25, ease: 'power2.in',
       onComplete: () => {
         adminDashboard.style.opacity = '';
-        showLogin();
+        if (window.fb && window.fb.auth) window.fb.auth.signOut();
+        // onAuthStateChanged (see INIT) shows the login screen.
       }
     });
   });
@@ -1460,8 +1487,11 @@
   /* ═══════════════════════════════════════════════════════════════
      INIT — must run last so all const declarations above are live
      ═══════════════════════════════════════════════════════════════ */
-  if (sessionStorage.getItem(SS_AUTH)) {
-    showDashboard();
+  if (window.fb && window.fb.auth) {
+    window.fb.auth.onAuthStateChanged(function (user) {
+      if (user) showDashboard();
+      else      showLogin();
+    });
   } else {
     showLogin();
   }

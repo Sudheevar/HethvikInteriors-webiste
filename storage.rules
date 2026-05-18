@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Hethvik Interiors — admin-only access to uploaded design images.
+// Used from Phase 3 onward (image upload). Apply this in the Firebase
+// console once Cloud Storage is enabled. Update the UID below if the
+// admin user ever changes.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid == 'gyeOa3JKe1cyFosW5zGEIx6IqKl2';
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

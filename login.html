@@ -39,8 +39,8 @@
 
       <form id="loginForm" autocomplete="off" novalidate>
         <div class="form-group">
-          <label for="loginUser"><i class="fa-solid fa-user"></i> Employee ID</label>
-          <input type="text" id="loginUser" placeholder="Enter your employee ID" autocomplete="username">
+          <label for="loginUser"><i class="fa-solid fa-envelope"></i> Email</label>
+          <input type="email" id="loginUser" placeholder="you@example.com" autocomplete="username">
         </div>
         <div class="form-group">
           <label for="loginPass"><i class="fa-solid fa-lock"></i> Password</label>
@@ -438,6 +438,13 @@
 
   <!-- ─── Scripts ─────────────────────────────────────────────── -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Firebase (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-init.js"></script>
+
   <script src="js/login.js"></script>
 
 </body>
