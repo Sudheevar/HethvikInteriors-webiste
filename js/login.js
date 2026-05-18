@@ -4,10 +4,6 @@
   /* ═══════════════════════════════════════════════════════════════
      CONSTANTS
      ═══════════════════════════════════════════════════════════════ */
-  const LS_QUOTES   = 'hethvik_quotes';
-  const LS_BILLS    = 'hethvik_bills';
-  const LS_PROJECTS = 'hethvik_projects';
-
   const DEFAULT_TERMS = `1. This quotation is valid for 30 days from the date of issue.
 2. 50% advance payment required to commence work.
 3. Balance payment due upon project completion.
@@ -201,15 +197,22 @@
   `;
 
   /* ═══════════════════════════════════════════════════════════════
-     STORAGE HELPERS
-     ═══════════════════════════════════════════════════════════════ */
-  function getQuotes()    { return JSON.parse(localStorage.getItem(LS_QUOTES)   || '[]'); }
-  function getBills()     { return JSON.parse(localStorage.getItem(LS_BILLS)    || '[]'); }
-  function getProjects()  { return JSON.parse(localStorage.getItem(LS_PROJECTS) || 'null'); }
+     DATA LAYER  (Firestore-backed cache — see js/data.js)
 
-  function saveQuotes(arr)   { localStorage.setItem(LS_QUOTES,   JSON.stringify(arr)); }
-  function saveBills(arr)    { localStorage.setItem(LS_BILLS,    JSON.stringify(arr)); }
-  function saveProjects(arr) { localStorage.setItem(LS_PROJECTS, JSON.stringify(arr)); }
+     Reads stay synchronous (cache slice). Writes are per-document
+     upsert*/delete* ops that update the cache synchronously and push
+     one doc to Firestore; onSnapshot reconciles + re-renders.
+     ═══════════════════════════════════════════════════════════════ */
+  function getQuotes()   { return window.fbData ? window.fbData.getQuotes()   : []; }
+  function getBills()    { return window.fbData ? window.fbData.getBills()    : []; }
+  function getProjects() { return window.fbData ? window.fbData.getProjects() : []; }
+
+  function upsertQuote(q)     { return window.fbData.upsertQuote(q); }
+  function deleteQuoteDoc(id) { return window.fbData.deleteQuote(id); }
+  function upsertBill(b)      { return window.fbData.upsertBill(b); }
+  function deleteBillDoc(no)  { return window.fbData.deleteBill(no); }
+  function upsertProject(p)   { return window.fbData.upsertProject(p); }
+  function deleteProjectDoc(id){ return window.fbData.deleteProject(id); }
 
   /* ═══════════════════════════════════════════════════════════════
      ID GENERATORS
@@ -690,11 +693,8 @@
     const name = qClientName.value.trim();
     if (!name) { showToast('Please enter a client name.', 'error'); return; }
 
-    const quote  = buildQuoteObject(status);
-    const quotes = getQuotes();
-    const idx    = quotes.findIndex(q => q.id === quote.id);
-    if (idx >= 0) { quotes[idx] = quote; } else { quotes.push(quote); }
-    saveQuotes(quotes);
+    const quote = buildQuoteObject(status);
+    upsertQuote(quote);
 
     showToast(status === 'draft' ? 'Draft saved.' : 'Quotation saved!');
     clearBuilder();
@@ -727,18 +727,15 @@
       notes:          qNotes.value.trim(),
     };
 
-    const bills = getBills();
-    const bill  = bills.find(b => b.billNo === editingBillNo);
-    if (!bill) { showToast('Bill not found.', 'error'); return; }
-    Object.assign(bill, fields);   // preserves billNo, billDate, quoteId, status
-    saveBills(bills);
+    const existingBill = getBills().find(b => b.billNo === editingBillNo);
+    if (!existingBill) { showToast('Bill not found.', 'error'); return; }
+    const bill = Object.assign({}, existingBill, fields); // preserves billNo, billDate, quoteId, status
+    upsertBill(bill);
 
     if (bill.quoteId) {
-      const quotes = getQuotes();
-      const quote  = quotes.find(q => q.id === bill.quoteId);
-      if (quote) {
-        Object.assign(quote, fields); // preserves id, date, status ('converted')
-        saveQuotes(quotes);
+      const srcQuote = getQuotes().find(q => q.id === bill.quoteId);
+      if (srcQuote) {
+        upsertQuote(Object.assign({}, srcQuote, fields)); // preserves id, date, status ('converted')
       }
     }
 
@@ -898,8 +895,7 @@
       const card = btn.closest('.quote-card');
       gsap.to(card, { opacity: 0, x: -10, height: 0, marginBottom: 0, padding: 0, duration: 0.3,
         onComplete: () => {
-          const quotes = getQuotes().filter(q => q.id !== id);
-          saveQuotes(quotes);
+          deleteQuoteDoc(id);
           renderQuoteList(quoteSearch.value);
           showToast('Quotation deleted.', 'info');
         }
@@ -917,8 +913,7 @@
      BILL CONVERSION
      ═══════════════════════════════════════════════════════════════ */
   function convertToBill(quoteId) {
-    const quotes = getQuotes();
-    const quote  = quotes.find(q => q.id === quoteId);
+    const quote = getQuotes().find(q => q.id === quoteId);
     if (!quote) return;
     if (quote.status === 'converted') {
       showToast('This quotation is already converted to a bill.', 'info');
@@ -931,13 +926,8 @@
       quoteId:  quoteId,
       status:   'final',
     });
-
-    const bills = getBills();
-    bills.push(bill);
-    saveBills(bills);
-
-    quote.status = 'converted';
-    saveQuotes(quotes);
+    upsertBill(bill);
+    upsertQuote(Object.assign({}, quote, { status: 'converted' }));
 
     selectedBillId = bill.billNo;
     renderQuoteList(quoteSearch.value);
@@ -1081,15 +1071,15 @@
       const card = btn.closest('.quote-card');
       gsap.to(card, { opacity: 0, x: -10, height: 0, marginBottom: 0, padding: 0, duration: 0.3,
         onComplete: () => {
-          const all  = getBills();
-          const bill = all.find(b => b.billNo === billNo);
-          saveBills(all.filter(b => b.billNo !== billNo));
+          const bill = getBills().find(b => b.billNo === billNo);
+          deleteBillDoc(billNo);
 
           // Revert the source quotation so it can be converted again (testing).
           if (bill && bill.quoteId) {
-            const quotes = getQuotes();
-            const q = quotes.find(x => x.id === bill.quoteId);
-            if (q && q.status === 'converted') { q.status = 'sent'; saveQuotes(quotes); }
+            const q = getQuotes().find(x => x.id === bill.quoteId);
+            if (q && q.status === 'converted') {
+              upsertQuote(Object.assign({}, q, { status: 'sent' }));
+            }
           }
 
           if (selectedBillId === billNo) {
@@ -1116,11 +1106,9 @@
   });
 
   markPaidBtn.addEventListener('click', function () {
-    const bills = getBills();
-    const bill  = bills.find(b => b.billNo === this.dataset.billno);
+    const bill = getBills().find(b => b.billNo === this.dataset.billno);
     if (!bill) return;
-    bill.status = 'paid';
-    saveBills(bills);
+    upsertBill(Object.assign({}, bill, { status: 'paid' }));
     renderBillList(billSearch.value);
     showBillDetail(bill.billNo);
     showToast(`Bill ${bill.billNo} marked as paid!`);
@@ -1339,16 +1327,6 @@
     }
 
     const existingId = editingProjectId.value;
-    let projects = getProjects();
-
-    if (!projects) {
-      const stored = localStorage.getItem(LS_PROJECTS);
-      projects = stored ? JSON.parse(stored) : null;
-    }
-
-    if (!projects) {
-      projects = [];
-    }
 
     const project = {
       id:        existingId ? parseInt(existingId) : nextProjectId(),
@@ -1367,16 +1345,8 @@
       reviews,
     };
 
-    if (existingId) {
-      const idx = projects.findIndex(p => p.id === project.id);
-      if (idx >= 0) projects[idx] = project; else projects.push(project);
-      showToast('Project updated!');
-    } else {
-      projects.push(project);
-      showToast('Project saved to portfolio!');
-    }
-
-    saveProjects(projects);
+    upsertProject(project);
+    showToast(existingId ? 'Project updated!' : 'Project saved to portfolio!');
     clearProjectForm();
     renderProjectList();
   });
@@ -1431,9 +1401,7 @@
       const card = btn.closest('.project-admin-card');
       gsap.to(card, { opacity: 0, x: -10, height: 0, marginBottom: 0, padding: 0, duration: 0.3,
         onComplete: () => {
-          let projects = getProjects() || [];
-          projects = projects.filter(p => p.id !== id);
-          saveProjects(projects);
+          deleteProjectDoc(id);
           renderProjectList();
           showToast('Project removed from portfolio.', 'info');
         }
@@ -1485,12 +1453,50 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════
+     REACTIVE RE-RENDER (called by js/data.js onSnapshot)
+     ═══════════════════════════════════════════════════════════════ */
+  function refreshOpenBillDetail() {
+    if (!selectedBillId || billDetail.style.display === 'none') return;
+    if (getBills().some(b => b.billNo === selectedBillId)) {
+      showBillDetail(selectedBillId);
+    } else {
+      selectedBillId = null;
+      billDetail.style.display       = 'none';
+      billPreviewEmpty.style.display = 'block';
+    }
+  }
+
+  function rerender(which) {
+    if (which === 'quotes')   renderQuoteList(quoteSearch.value);
+    if (which === 'bills')  { renderBillList(billSearch.value); refreshOpenBillDetail(); }
+    if (which === 'projects') renderProjectList();
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
      INIT — must run last so all const declarations above are live
      ═══════════════════════════════════════════════════════════════ */
   if (window.fb && window.fb.auth) {
+    if (window.fbData) window.fbData.onError = (m) => showToast(m, 'error');
+
     window.fb.auth.onAuthStateChanged(function (user) {
-      if (user) showDashboard();
-      else      showLogin();
+      if (!user) { showLogin(); return; }
+
+      if (!window.fbData) {
+        console.error('[login] Data layer unavailable; dashboard will have no cloud data.');
+        showDashboard();
+        return;
+      }
+
+      window.fbData.start(rerender)
+        .then(() => window.fbData.importLocalData())
+        .then((imported) => {
+          showDashboard();
+          if (imported) showToast('Local data imported to the cloud.');
+        })
+        .catch((e) => {
+          console.error('[login] Firestore start/import failed', e);
+          showDashboard();
+        });
     });
   } else {
     showLogin();
