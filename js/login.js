@@ -1479,7 +1479,11 @@
     if (window.fbData) window.fbData.onError = (m) => showToast(m, 'error');
 
     window.fb.auth.onAuthStateChanged(function (user) {
-      if (!user) { showLogin(); return; }
+      if (!user) {
+        if (window.fbData) window.fbData.stop();
+        showLogin();
+        return;
+      }
 
       if (!window.fbData) {
         console.error('[login] Data layer unavailable; dashboard will have no cloud data.');

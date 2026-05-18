@@ -133,6 +133,18 @@
         // Never hang start(): let the dashboard show even on error.
         if (first) { first = false; onFirst(); }
 
+        // Expected right after logout: signOut() leaves the listeners
+        // attached for an instant and Firestore re-runs them with no
+        // auth. Not an error — drop the listener quietly, no toast, no
+        // retry. stop() also tears these down on the logout path.
+        if (!(window.fb.auth && window.fb.auth.currentUser)) {
+          if (_unsub[coll]) {
+            try { _unsub[coll](); } catch (x) { /* noop */ }
+            _unsub[coll] = null;
+          }
+          return;
+        }
+
         // A listen rejected with permission-denied is TERMINAL — the SDK
         // will not retry it. On a restored session the first listen can
         // race ahead of the auth token reaching Firestore (and freshly
@@ -187,6 +199,21 @@
       return Promise.all([pQuotes, pBills, pProjects]);
     }).then(function () {});
     return _startPromise;
+  }
+
+  // Tear everything down on logout. Detaches the listeners (so they
+  // don't fire permission-denied with no auth), clears the caches, and
+  // resets _startPromise so the next login re-subscribes from scratch.
+  function stop() {
+    Object.keys(_unsub).forEach(function (k) {
+      if (_unsub[k]) { try { _unsub[k](); } catch (e) { /* noop */ } }
+    });
+    _unsub        = {};
+    _denyRetry    = {};
+    _quotes       = [];
+    _bills        = [];
+    _projects     = [];
+    _startPromise = null;
   }
 
   /* ── One-time localStorage → Firestore migration ─────────────── */
@@ -251,6 +278,7 @@
     upsertProject: upsertProject,
     deleteProject: deleteProject,
     start:         start,
+    stop:          stop,
     importLocalData: importLocalData,
     onError:       null,   // login.js sets this to a toast fn
   };
