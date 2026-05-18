@@ -446,6 +446,16 @@
 }
 .items-table select optgroup { color: var(--gold); font-weight: 600; }
 
+.items-table .choice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.items-table .choice-field .custom-in {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
 .total-cell {
   color: var(--gold);
   font-weight: 600;

@@ -387,7 +387,41 @@
     'MBR (Master Bedroom)', 'GBR (Guest Bedroom)', 'CBR (Children\'s Bedroom)',
     'Kitchen', 'Utility Area', 'Living Room', 'Dining Room', 'Bathroom',
     'Passage / Corridor', 'Study Room', 'Balcony', 'Home Office',
-    'Pooja Room', 'Store Room', 'Custom…'
+    'Pooja Room', 'Store Room', 'Foyer / Entrance'
+  ];
+
+  const DESCRIPTION_GROUPS = [
+    {
+      label: 'Bedroom',
+      options: ['Wardrobe (Sliding)', 'Wardrobe (Openable)', 'Loft / Overhead Storage',
+        'Dresser Unit', 'Study Table', 'Bed Back Panelling', 'Side Tables', 'Bed Cot',
+        'Wardrobe Internal Accessories']
+    },
+    {
+      label: 'Living / Dining',
+      options: ['TV Unit', 'TV Back Panelling', 'Crockery Unit', 'Showcase / Display Unit',
+        'Shoe Rack', 'Pooja Unit', 'Partition / Jaali', 'Bar Unit', 'Console / Foyer Unit']
+    },
+    {
+      label: 'Kitchen',
+      options: ['Base Cabinets', 'Wall Cabinets', 'Tall Unit', 'Loft Unit', 'Kitchen Island',
+        'Countertop', 'Tandem / Cutlery Drawers', 'Chimney Casing', 'Crockery Drawers']
+    },
+    {
+      label: 'Wall & Ceiling',
+      options: ['Wall Design / Panelling', 'Wallpaper Work', 'Texture / Paint Work',
+        'False Ceiling', 'Cove Lighting', 'Mirror Panelling', 'Highlighter Wall']
+    },
+    {
+      label: 'Hardware & Finishes',
+      options: ['Handles & Knobs', 'Hinges & Channels', 'Profile Lights',
+        'Soft-Close Fittings', 'Glass Shutters', 'Laminate Finish', 'PU / Duco Finish']
+    },
+    {
+      label: 'Bathroom & Utility',
+      options: ['Vanity / Wash Counter', 'Mirror Cabinet', 'Storage Unit',
+        'Utility Cabinets', 'Loft Storage']
+    }
   ];
 
   const MATERIALS_GROUPS = [
@@ -417,38 +451,77 @@
     }
   ];
 
-  function makePlaceSelect(val = '') {
-    const sel = document.createElement('select');
-    PLACES.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = p;
-      if (p === val) opt.selected = true;
-      sel.appendChild(opt);
-    });
-    return sel;
-  }
+  // Reusable dropdown that also supports a free-text "Custom…" entry.
+  // Returns the wrapper element with a `.getValue()` method attached.
+  const CUSTOM_OPT = 'Custom…';
 
-  function makeMaterialSelect(val = '') {
-    const sel = document.createElement('select');
-    MATERIALS_GROUPS.forEach(grp => {
-      const og = document.createElement('optgroup');
-      og.label = grp.label;
-      grp.options.forEach(o => {
-        const opt = document.createElement('option');
-        opt.value = o;
-        opt.textContent = o;
-        if (o === val) opt.selected = true;
-        og.appendChild(opt);
+  function makeChoiceField(config) {
+    const wrap = document.createElement('div');
+    wrap.className = 'choice-field' + (config.className ? ' ' + config.className : '');
+
+    const sel  = document.createElement('select');
+    const flat = [];
+
+    if (config.groups) {
+      config.groups.forEach(g => {
+        const og = document.createElement('optgroup');
+        og.label = g.label;
+        g.options.forEach(o => {
+          const op = document.createElement('option');
+          op.value = o; op.textContent = o;
+          og.appendChild(op);
+          flat.push(o);
+        });
+        sel.appendChild(og);
       });
-      sel.appendChild(og);
-    });
-    return sel;
+    } else {
+      (config.options || []).forEach(o => {
+        const op = document.createElement('option');
+        op.value = o; op.textContent = o;
+        sel.appendChild(op);
+        flat.push(o);
+      });
+    }
+
+    const customOpt = document.createElement('option');
+    customOpt.value = CUSTOM_OPT;
+    customOpt.textContent = CUSTOM_OPT;
+    sel.appendChild(customOpt);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'custom-in';
+    input.placeholder = config.placeholder || 'Type here…';
+    input.style.display = 'none';
+
+    function syncCustom(focus) {
+      const on = sel.value === CUSTOM_OPT;
+      input.style.display = on ? '' : 'none';
+      if (on && focus) input.focus();
+    }
+    sel.addEventListener('change', () => syncCustom(true));
+
+    const v = config.value || '';
+    if (v && flat.indexOf(v) === -1) {
+      sel.value = CUSTOM_OPT;
+      input.value = v;
+    } else if (v) {
+      sel.value = v;
+    }
+    syncCustom(false);
+
+    wrap.appendChild(sel);
+    wrap.appendChild(input);
+    wrap.getValue = function () {
+      return sel.value === CUSTOM_OPT ? input.value.trim() : sel.value;
+    };
+    return wrap;
   }
 
   function addItemRow(data = {}) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
+      <td></td>
       <td></td>
       <td><input type="number" class="sqft-in" value="${data.sqft || ''}" min="0" placeholder="0"></td>
       <td></td>
@@ -456,8 +529,15 @@
       <td class="total-cell">₹0</td>
       <td><button type="button" class="del-item-btn" title="Remove"><i class="fa-solid fa-xmark"></i></button></td>
     `;
-    tr.cells[0].appendChild(makePlaceSelect(data.place));
-    tr.cells[2].appendChild(makeMaterialSelect(data.material));
+    tr.cells[0].appendChild(makeChoiceField({
+      options: PLACES, value: data.place, placeholder: 'Custom place…', className: 'place-field'
+    }));
+    tr.cells[1].appendChild(makeChoiceField({
+      groups: DESCRIPTION_GROUPS, value: data.description, placeholder: 'Custom description…', className: 'desc-field'
+    }));
+    tr.cells[3].appendChild(makeChoiceField({
+      groups: MATERIALS_GROUPS, value: data.material, placeholder: 'Custom material…', className: 'material-field'
+    }));
 
     tr.querySelector('.del-item-btn').addEventListener('click', () => {
       gsap.to(tr, { opacity: 0, x: -10, duration: 0.2, onComplete: () => { tr.remove(); recalcTotals(); } });
@@ -493,10 +573,14 @@
     return Array.from(itemsBody.querySelectorAll('tr')).map(tr => {
       const sqft  = parseFloat(tr.querySelector('.sqft-in').value)  || 0;
       const price = parseFloat(tr.querySelector('.price-in').value) || 0;
+      const placeF = tr.querySelector('.place-field');
+      const descF  = tr.querySelector('.desc-field');
+      const matF   = tr.querySelector('.material-field');
       return {
-        place:        tr.querySelector('select:first-of-type')?.value || '',
+        place:        placeF ? placeF.getValue() : '',
+        description:  descF  ? descF.getValue()  : '',
         sqft,
-        material:     tr.querySelectorAll('select')[1]?.value || '',
+        material:     matF   ? matF.getValue()   : '',
         pricePerSqft: price,
         total:        sqft * price,
       };
@@ -926,6 +1010,7 @@
     billItemsBody.innerHTML = (bill.items || []).map(item => `
       <tr>
         <td>${item.place}</td>
+        <td>${item.description || '—'}</td>
         <td>${item.sqft}</td>
         <td>${item.material}</td>
         <td>${fmtINR(item.pricePerSqft)}</td>
@@ -1032,6 +1117,7 @@
       <tr>
         <td>${i + 1}</td>
         <td>${item.place}</td>
+        <td>${item.description || '—'}</td>
         <td>${item.sqft} sqft</td>
         <td>${item.material}</td>
         <td style="text-align:right">₹${(item.pricePerSqft || 0).toLocaleString('en-IN')}</td>
@@ -1077,6 +1163,7 @@
             <tr>
               <th>#</th>
               <th>Place / Area</th>
+              <th>Description</th>
               <th>Sqft</th>
               <th>Material</th>
               <th style="text-align:right">Rate/Sqft</th>
