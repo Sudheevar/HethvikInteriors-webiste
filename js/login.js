@@ -893,6 +893,9 @@
           <button class="qc-btn qc-btn-print" data-action="print-bill" data-billno="${b.billNo}">
             <i class="fa-solid fa-download"></i> PDF
           </button>
+          <button class="qc-btn qc-btn-delete" data-action="delete-bill" data-billno="${b.billNo}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </div>
       `;
       billList.appendChild(card);
@@ -961,6 +964,33 @@
     } else if (action === 'print-bill') {
       const b = getBills().find(x => x.billNo === billNo);
       if (b) printDocument(b, 'FINAL BILL');
+    } else if (action === 'delete-bill') {
+      if (!confirm(`Delete bill ${billNo}? (testing only)`)) return;
+      const card = btn.closest('.quote-card');
+      gsap.to(card, { opacity: 0, x: -10, height: 0, marginBottom: 0, padding: 0, duration: 0.3,
+        onComplete: () => {
+          const all  = getBills();
+          const bill = all.find(b => b.billNo === billNo);
+          saveBills(all.filter(b => b.billNo !== billNo));
+
+          // Revert the source quotation so it can be converted again (testing).
+          if (bill && bill.quoteId) {
+            const quotes = getQuotes();
+            const q = quotes.find(x => x.id === bill.quoteId);
+            if (q && q.status === 'converted') { q.status = 'sent'; saveQuotes(quotes); }
+          }
+
+          if (selectedBillId === billNo) {
+            selectedBillId = null;
+            billDetail.style.display = 'none';
+            billPreviewEmpty.style.display = 'block';
+          }
+
+          renderBillList(billSearch.value);
+          renderQuoteList(quoteSearch.value);
+          showToast('Bill deleted.', 'info');
+        }
+      });
     }
   });
 
