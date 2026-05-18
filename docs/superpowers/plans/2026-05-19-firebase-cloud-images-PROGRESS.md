@@ -10,15 +10,21 @@ Resume doc for a fresh session. Plan: `2026-05-19-firebase-cloud-images.md`
 |-------|-------|
 | 0 — Firebase console setup | ✅ Done by user |
 | 1 — Firebase wiring + Auth | ✅ Done, committed, **login verified working** |
-| 2 — Async data layer (Firestore) | ⛔ NOT STARTED — start here |
-| 3 — Image upload | ⬜ pending |
+| 2 — Async data layer (Firestore) | ✅ Code done & pushed — **awaiting user manual verification** |
+| 3 — Image upload | ⬜ NOT STARTED — start here (after Phase 2 verified) |
 | 4 — Embed images in PDF | ⬜ pending |
 | 5 — Verification | ⬜ pending |
 
 Commits on `feature/firebase-cloud-images` (all pushed):
 - plan doc → `6bb0f88`
 - Phase 1 (auth) → `afd2b34`
-- (this progress doc → next commit)
+- progress doc → `d659200`
+- Phase 2 (Firestore data layer) → `69a7518`
+
+> **If Phase 2 verification passed:** proceed to Phase 3 (summary below;
+> full detail in the plan doc). First decide Storage (Blaze + $1 budget)
+> vs Cloudinary, then add `firebase-storage-compat.js` + `storage` to
+> `window.fb` and `storage.rules` in console.
 
 ## Firebase facts (already created, do not recreate)
 
@@ -59,7 +65,50 @@ Commits on `feature/firebase-cloud-images` (all pushed):
     showDashboard() : showLogin())` (replaced the old `sessionStorage` check).
 - Data is STILL in `localStorage` after Phase 1 — intentional.
 
-## PHASE 2 — detailed implementation spec (do this next)
+## Phase 2 — what was done (context for Phase 3)
+
+- New `js/data.js` (classic IIFE) exposes `window.fbData`:
+  - in-memory caches `_quotes/_bills/_projects`; `getQuotes/getBills/
+    getProjects()` return `.slice()` (synchronous — read sites unchanged).
+  - `upsertQuote/Bill/Project` + `deleteQuote/Bill/Project`: update the
+    cache **synchronously** then `db.collection(...).doc(id).set/delete`.
+    The sync cache update is why `convertToBill → showBillDetail` (same
+    tick) still works without making callers async.
+  - `start(onChange)`: `onSnapshot` on all 3 collections; replaces cache
+    with server state + calls `onChange(which)` → reactive re-render.
+    Returns a promise that resolves after the first snapshot of each.
+  - `importLocalData()`: if cloud empty AND localStorage has data →
+    `window.confirm` → batch-write to Firestore. `_importDone` guard so
+    the prompt shows once. localStorage left intact as backup.
+  - Doc IDs: quotes `q.id`, bills `b.billNo`, projects `String(p.id)`.
+  - `onError` hook → login.js wires it to `showToast(..,'error')`.
+- `login.html`: `<script src="js/data.js">` added between
+  `firebase-init.js` and `login.js`.
+- `js/login.js`:
+  - Removed `LS_*` consts + localStorage get/save helpers. `getQuotes/
+    Bills/Projects` now delegate to `window.fbData`. Added wrappers
+    `upsertQuote/Bill/Project`, `deleteQuoteDoc/BillDoc/ProjectDoc`.
+  - All mutation sites converted to per-doc ops with **cloned** objects
+    (`Object.assign({}, src, patch)`) so the cache is never aliased:
+    `saveQuote`, quote delete, `convertToBill`, `saveBillEdits` (+ synced
+    source quote), bill `delete-bill` (+ quote status revert to `sent`),
+    `markPaid`, project save (single upsert; dead LS fallback removed),
+    project delete.
+  - INIT: `onAuthStateChanged` → `fbData.start(rerender)` →
+    `importLocalData()` → `showDashboard()` (toast if imported). Added
+    `rerender(which)` + `refreshOpenBillDetail()` (reactive helpers).
+  - Explicit `render*()` calls after mutations were kept (instant UX off
+    the sync cache); `onSnapshot` re-render handles import/other devices.
+- Behavior preserved: IDs from `.length`, status flow, quote↔bill sync,
+  "testing" bill-delete reverts the quote. Data NOT auto-deleted from
+  localStorage.
+
+### Phase 2 — VERIFICATION STILL PENDING (user, on live site)
+
+Run the checklist below on the live Pages URL. Until it passes, treat
+Phase 2 as unverified and do **not** start Phase 3.
+
+## PHASE 2 — detailed implementation spec (already implemented; kept for reference)
 
 Goal: quotes/bills/projects persist in Firestore (multi-device), with a
 one-time import of existing localStorage data. Keep behavior identical.
