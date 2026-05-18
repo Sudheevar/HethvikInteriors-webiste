@@ -34,6 +34,7 @@
   var LS_QUOTES   = 'hethvik_quotes';
   var LS_BILLS    = 'hethvik_bills';
   var LS_PROJECTS = 'hethvik_projects';
+  var LS_IMPORTED = 'hethvik_cloud_imported';  // persistent one-time-import guard
 
   /* In-memory caches (always the live arrays the getters read). */
   var _quotes   = [];
@@ -224,15 +225,16 @@
     } catch (e) { return []; }
   }
 
-  // Returns a Promise<boolean> — true only if records were imported.
+  // Returns a Promise<boolean> — true only if records were imported now.
+  // Idempotent and safe: a persistent localStorage flag means it can run
+  // at most once per browser, and it checks Firestore authoritatively
+  // (not the maybe-stale in-memory cache) before deciding the cloud is
+  // empty — so a startup timing window can never resurrect deleted docs.
   function importLocalData() {
     if (_importDone) return Promise.resolve(false);
     _importDone = true;
 
-    // Only offer import when the cloud is empty (fresh project).
-    if (_quotes.length || _bills.length || _projects.length) {
-      return Promise.resolve(false);
-    }
+    if (localStorage.getItem(LS_IMPORTED) === '1') return Promise.resolve(false);
 
     var lq = _readLS(LS_QUOTES);
     var lb = _readLS(LS_BILLS);
@@ -240,30 +242,55 @@
     var total = lq.length + lb.length + lp.length;
     if (!total) return Promise.resolve(false);
 
-    var ok = window.confirm(
-      'Found ' + total + ' existing record(s) saved in this browser ' +
-      '(quotations / bills / projects).\n\n' +
-      'Import them to the cloud now? Your local copy is kept as a backup.'
-    );
-    if (!ok) return Promise.resolve(false);
+    function markDone() {
+      try { localStorage.setItem(LS_IMPORTED, '1'); } catch (e) { /* noop */ }
+    }
 
-    var batch = db.batch();
-    lq.forEach(function (q) {
-      if (q && q.id != null) batch.set(db.collection('quotes').doc(String(q.id)), q);
-    });
-    lb.forEach(function (b) {
-      if (b && b.billNo != null) batch.set(db.collection('bills').doc(String(b.billNo)), b);
-    });
-    lp.forEach(function (p) {
-      if (p && p.id != null) batch.set(db.collection('projects').doc(String(p.id)), p);
-    });
-
-    return batch.commit()
-      .then(function () { return true; })
-      .catch(function (e) {
-        _err('Import failed: ' + ((e && e.message) || e));
+    return Promise.all([
+      db.collection('quotes').limit(1).get(),
+      db.collection('bills').limit(1).get(),
+      db.collection('projects').limit(1).get()
+    ]).then(function (snaps) {
+      var cloudEmpty = snaps[0].empty && snaps[1].empty && snaps[2].empty;
+      if (!cloudEmpty) {
+        // Cloud already has data — importing would duplicate records and
+        // resurrect ones deleted elsewhere. Never ask again.
+        markDone();
         return false;
+      }
+
+      var ok = window.confirm(
+        'Found ' + total + ' record(s) saved only in this browser ' +
+        '(quotations / bills / projects).\n\n' +
+        'Import them to the cloud now? This is a one-time migration; ' +
+        'your local copy is kept as a backup.'
+      );
+      if (!ok) { markDone(); return false; }
+
+      var batch = db.batch();
+      lq.forEach(function (q) {
+        if (q && q.id != null) batch.set(db.collection('quotes').doc(String(q.id)), q);
       });
+      lb.forEach(function (b) {
+        if (b && b.billNo != null) batch.set(db.collection('bills').doc(String(b.billNo)), b);
+      });
+      lp.forEach(function (p) {
+        if (p && p.id != null) batch.set(db.collection('projects').doc(String(p.id)), p);
+      });
+
+      return batch.commit().then(function () {
+        markDone();
+        return true;
+      }).catch(function (e) {
+        _err('Import failed: ' + ((e && e.message) || e));
+        return false; // not marked done — safe to retry next login
+      });
+    }).catch(function (e) {
+      // Couldn't verify the cloud is empty — skip import (safer than
+      // risking duplicates). Will re-check on the next login.
+      console.error('[fbData] import check failed', e);
+      return false;
+    });
   }
 
   /* ── Public surface ──────────────────────────────────────────── */
