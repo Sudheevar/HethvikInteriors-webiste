@@ -43,6 +43,10 @@
   var _onChange     = null;   // (which) => void, set by start()
   var _startPromise = null;   // resolves after first snapshot of all 3
   var _importDone   = false;  // guard so the import prompt shows once
+  var _unsub        = {};     // active onSnapshot unsubscribe fns, by collection
+  var _denyRetry    = {};     // permission-denied retry counts, by collection
+  var MAX_DENY_RETRIES = 5;
+  var DENY_RETRY_MS    = 1500;
 
   /* ── Error surfacing ─────────────────────────────────────────── */
   function _err(msg) {
@@ -117,34 +121,71 @@
 
   function _subscribe(coll, targetSetter, which, onFirst) {
     var first = true;
-    db.collection(coll).onSnapshot(
+    if (_unsub[coll]) { try { _unsub[coll](); } catch (e) { /* noop */ } }
+    _unsub[coll] = db.collection(coll).onSnapshot(
       function (qs) {
+        _denyRetry[coll] = 0;
         targetSetter(qs.docs.map(function (d) { return d.data(); }));
         if (first) { first = false; onFirst(); }
         _emit(which);
       },
       function (e) {
+        // Never hang start(): let the dashboard show even on error.
+        if (first) { first = false; onFirst(); }
+
+        // A listen rejected with permission-denied is TERMINAL — the SDK
+        // will not retry it. On a restored session the first listen can
+        // race ahead of the auth token reaching Firestore (and freshly
+        // published rules take a moment to propagate). Re-subscribe a few
+        // times with backoff before surfacing the error.
+        var n = _denyRetry[coll] || 0;
+        if (e && e.code === 'permission-denied' && n < MAX_DENY_RETRIES) {
+          _denyRetry[coll] = n + 1;
+          setTimeout(function () {
+            _subscribe(coll, targetSetter, which, onFirst);
+          }, DENY_RETRY_MS);
+          return;
+        }
+
         console.error('[fbData] ' + coll + ' snapshot error', e);
         _err('Cloud sync error (' + coll + ').');
-        if (first) { first = false; onFirst(); } // don't hang start()
       }
     );
+  }
+
+  // Resolve the signed-in user's ID token BEFORE the first listen so
+  // Firestore sends authenticated requests (avoids the startup race
+  // where listeners attach before the token reaches the SDK).
+  function _awaitAuthReady() {
+    return new Promise(function (resolve) {
+      var auth = window.fb.auth;
+      function ready(u) {
+        if (!u) { resolve(); return; }
+        u.getIdToken().then(function () { resolve(); },
+                            function () { resolve(); });
+      }
+      if (auth && auth.currentUser) { ready(auth.currentUser); return; }
+      if (!auth) { resolve(); return; }
+      var off = auth.onAuthStateChanged(function (u) { off(); ready(u); });
+    });
   }
 
   function start(onChange) {
     if (onChange) _onChange = onChange;
     if (_startPromise) return _startPromise;
 
-    var rq, rb, rp;
-    var pQuotes   = new Promise(function (r) { rq = r; });
-    var pBills    = new Promise(function (r) { rb = r; });
-    var pProjects = new Promise(function (r) { rp = r; });
+    _startPromise = _awaitAuthReady().then(function () {
+      var rq, rb, rp;
+      var pQuotes   = new Promise(function (r) { rq = r; });
+      var pBills    = new Promise(function (r) { rb = r; });
+      var pProjects = new Promise(function (r) { rp = r; });
 
-    _subscribe('quotes',   function (a) { _quotes   = a; }, 'quotes',   rq);
-    _subscribe('bills',    function (a) { _bills    = a; }, 'bills',    rb);
-    _subscribe('projects', function (a) { _projects = a; }, 'projects', rp);
+      _subscribe('quotes',   function (a) { _quotes   = a; }, 'quotes',   rq);
+      _subscribe('bills',    function (a) { _bills    = a; }, 'bills',    rb);
+      _subscribe('projects', function (a) { _projects = a; }, 'projects', rp);
 
-    _startPromise = Promise.all([pQuotes, pBills, pProjects]).then(function () {});
+      return Promise.all([pQuotes, pBills, pProjects]);
+    }).then(function () {});
     return _startPromise;
   }
 
