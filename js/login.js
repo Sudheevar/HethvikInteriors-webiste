@@ -18,6 +18,191 @@
 6. Any changes to scope will be quoted separately.`;
 
   /* ═══════════════════════════════════════════════════════════════
+     PRINT STYLESHEET (used by the standalone print window)
+     ═══════════════════════════════════════════════════════════════ */
+  const PRINT_STYLES = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #fff;
+    color: #1a1a1a;
+    font-family: 'Jost', 'Segoe UI', sans-serif;
+  }
+  .print-doc {
+    max-width: 100%;
+    padding: 15mm 18mm;
+    background: #fff;
+    position: relative;
+  }
+  .print-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 72pt;
+    font-weight: 700;
+    color: rgba(201,168,76,0.07);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 8mm;
+    border-bottom: 2pt solid #C9A84C;
+    margin-bottom: 8mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-company h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22pt;
+    color: #1a1a1a;
+    margin: 0 0 2mm;
+  }
+  .print-company p {
+    font-size: 9pt;
+    color: #666;
+    margin: 0;
+    line-height: 1.6;
+  }
+  .print-doc-type { text-align: right; }
+  .print-doc-type h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18pt;
+    color: #C9A84C;
+    margin: 0 0 2mm;
+    letter-spacing: 0.08em;
+  }
+  .print-doc-type p {
+    font-size: 9pt;
+    color: #666;
+    margin: 0.5mm 0;
+  }
+  .print-doc-type .print-id {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .print-client-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8mm;
+    margin-bottom: 8mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-client-box h4 {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #999;
+    margin: 0 0 2mm;
+  }
+  .print-client-box p {
+    font-size: 10pt;
+    margin: 0.75mm 0;
+    color: #1a1a1a;
+    line-height: 1.5;
+  }
+  .print-client-box .client-name { font-size: 12pt; font-weight: 600; }
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6mm;
+    font-size: 9.5pt;
+    position: relative;
+    z-index: 1;
+  }
+  .print-table thead tr { background: #C9A84C; }
+  .print-table th {
+    padding: 2.5mm 3mm;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .print-table td {
+    padding: 2mm 3mm;
+    border-bottom: 0.5pt solid #e8e8e8;
+    color: #2a2a2a;
+  }
+  .print-table tbody tr:nth-child(even) td { background: #fafafa; }
+  .print-table .total-td {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .print-totals-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-totals-box {
+    width: 72mm;
+    border: 1pt solid #e0e0e0;
+    border-radius: 3mm;
+    overflow: hidden;
+  }
+  .print-totals-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2mm 4mm;
+    font-size: 9.5pt;
+    border-bottom: 0.5pt solid #e8e8e8;
+    color: #444;
+  }
+  .print-totals-row:last-child { border-bottom: none; }
+  .print-totals-row.grand-row {
+    background: #C9A84C;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11pt;
+  }
+  .print-discount-row { color: #2a8c5a; }
+  .print-terms {
+    border-top: 1pt solid #e0e0e0;
+    padding-top: 5mm;
+    margin-top: 5mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-terms h4 {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    margin: 0 0 3mm;
+  }
+  .print-terms p {
+    font-size: 8pt;
+    color: #666;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-line;
+  }
+  .print-footer {
+    position: fixed;
+    bottom: 10mm;
+    left: 18mm;
+    right: 18mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5pt;
+    color: #aaa;
+    border-top: 0.5pt solid #ddd;
+    padding-top: 3mm;
+  }
+  @page { size: A4; margin: 0; }
+  `;
+
+  /* ═══════════════════════════════════════════════════════════════
      STORAGE HELPERS
      ═══════════════════════════════════════════════════════════════ */
   function getQuotes()    { return JSON.parse(localStorage.getItem(LS_QUOTES)   || '[]'); }
@@ -196,6 +381,7 @@
   const quoteIdBadge     = document.getElementById('quoteIdBadge');
 
   let editingQuoteId = null;
+  let editingBillNo  = null;
 
   const PLACES = [
     'MBR (Master Bedroom)', 'GBR (Guest Bedroom)', 'CBR (Children\'s Bedroom)',
@@ -343,6 +529,7 @@
 
   function clearBuilder() {
     editingQuoteId = null;
+    editingBillNo  = null;
     builderTitle.textContent = 'New Quotation';
     qClientName.value    = '';
     qClientPhone.value   = '';
@@ -351,6 +538,8 @@
     qGst.value           = '18';
     qNotes.value         = DEFAULT_TERMS;
     itemsBody.innerHTML  = '';
+    saveQuoteBtn.innerHTML     = '<i class="fa-solid fa-floppy-disk"></i> Save Quotation';
+    saveDraftBtn.style.display = '';
     recalcTotals();
     setQuoteIdBadge(nextQuoteId());
   }
@@ -401,12 +590,76 @@
     renderQuoteList();
   }
 
-  saveQuoteBtn.addEventListener('click', () => saveQuote('sent'));
+  function saveBillEdits() {
+    const name = qClientName.value.trim();
+    if (!name) { showToast('Please enter a client name.', 'error'); return; }
+
+    const items     = getItemRows();
+    const subtotal  = items.reduce((s, i) => s + i.total, 0);
+    const discount  = parseFloat(qDiscount.value) || 0;
+    const gstPct    = parseFloat(qGst.value)      || 0;
+    const afterDisc = Math.max(subtotal - discount, 0);
+    const gstAmt    = afterDisc * gstPct / 100;
+    const grand     = afterDisc + gstAmt;
+
+    const fields = {
+      clientName:     name,
+      clientPhone:    qClientPhone.value.trim(),
+      clientAddress:  qClientAddress.value.trim(),
+      items,
+      subtotal,
+      discountValue:  discount,
+      discountAmount: discount,
+      gstPercent:     gstPct,
+      gstAmount:      gstAmt,
+      grandTotal:     grand,
+      notes:          qNotes.value.trim(),
+    };
+
+    const bills = getBills();
+    const bill  = bills.find(b => b.billNo === editingBillNo);
+    if (!bill) { showToast('Bill not found.', 'error'); return; }
+    Object.assign(bill, fields);   // preserves billNo, billDate, quoteId, status
+    saveBills(bills);
+
+    if (bill.quoteId) {
+      const quotes = getQuotes();
+      const quote  = quotes.find(q => q.id === bill.quoteId);
+      if (quote) {
+        Object.assign(quote, fields); // preserves id, date, status ('converted')
+        saveQuotes(quotes);
+      }
+    }
+
+    const savedBillNo = bill.billNo;
+    showToast(`Bill ${savedBillNo} updated!`);
+    clearBuilder();
+    renderQuoteList(quoteSearch.value);
+    selectedBillId = savedBillNo;
+    renderBillList();
+    switchToTab('bills');
+    showBillDetail(savedBillNo);
+  }
+
+  saveQuoteBtn.addEventListener('click', () => {
+    if (editingBillNo) saveBillEdits();
+    else saveQuote('sent');
+  });
   saveDraftBtn.addEventListener('click', () => saveQuote('draft'));
   printQuoteBtn.addEventListener('click', () => {
     const name = qClientName.value.trim();
     if (!name) { showToast('Please enter client details before downloading.', 'error'); return; }
-    printDocument(buildQuoteObject('sent'), 'QUOTATION');
+    if (editingBillNo) {
+      const stored = getBills().find(b => b.billNo === editingBillNo) || {};
+      const data = Object.assign(buildQuoteObject('final'), {
+        billNo:   editingBillNo,
+        billDate: stored.billDate || new Date().toISOString(),
+        quoteId:  stored.quoteId,
+      });
+      printDocument(data, 'FINAL BILL');
+    } else {
+      printDocument(buildQuoteObject('sent'), 'QUOTATION');
+    }
   });
 
   function loadQuoteIntoBuilder(id) {
@@ -431,6 +684,33 @@
     document.getElementById('quotationBuilder').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function loadBillIntoBuilder(billNo) {
+    const bill = getBills().find(b => b.billNo === billNo);
+    if (!bill) return;
+
+    editingBillNo  = bill.billNo;
+    editingQuoteId = bill.quoteId || null;
+
+    builderTitle.textContent  = 'Editing Bill';
+    qClientName.value         = bill.clientName    || '';
+    qClientPhone.value        = bill.clientPhone   || '';
+    qClientAddress.value      = bill.clientAddress || '';
+    qDiscount.value           = bill.discountValue || 0;
+    qGst.value                = bill.gstPercent != null ? bill.gstPercent : 18;
+    qNotes.value              = bill.notes || DEFAULT_TERMS;
+    setQuoteIdBadge(bill.billNo);
+
+    saveQuoteBtn.innerHTML     = '<i class="fa-solid fa-floppy-disk"></i> Update Bill';
+    saveDraftBtn.style.display = 'none';
+
+    itemsBody.innerHTML = '';
+    (bill.items || []).forEach(item => addItemRow(item));
+    recalcTotals();
+
+    switchToTab('quotations');
+    document.getElementById('quotationBuilder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   /* ═══════════════════════════════════════════════════════════════
      QUOTE LIST
      ═══════════════════════════════════════════════════════════════ */
@@ -442,7 +722,7 @@
     let quotes = getQuotes().slice().reverse();
     if (filter) {
       const f = filter.toLowerCase();
-      quotes = quotes.filter(q => q.clientName.toLowerCase().includes(f) || q.id.toLowerCase().includes(f));
+      quotes = quotes.filter(q => (q.clientName || '').toLowerCase().includes(f) || (q.id || '').toLowerCase().includes(f));
     }
 
     quoteEmpty.style.display = quotes.length ? 'none' : 'block';
@@ -548,9 +828,11 @@
     quote.status = 'converted';
     saveQuotes(quotes);
 
+    selectedBillId = bill.billNo;
     renderQuoteList(quoteSearch.value);
     renderBillList();
     switchToTab('bills');
+    showBillDetail(bill.billNo);
     showToast(`Bill ${bill.billNo} created!`);
   }
 
@@ -570,6 +852,7 @@
   const billTotals      = document.getElementById('billTotalsDisplay');
   const printBillBtn    = document.getElementById('printBillBtn');
   const markPaidBtn     = document.getElementById('markPaidBtn');
+  const editBillBtn     = document.getElementById('editBillBtn');
 
   let selectedBillId = null;
 
@@ -577,7 +860,7 @@
     let bills = getBills().slice().reverse();
     if (filter) {
       const f = filter.toLowerCase();
-      bills = bills.filter(b => b.clientName.toLowerCase().includes(f) || b.billNo.toLowerCase().includes(f));
+      bills = bills.filter(b => (b.clientName || '').toLowerCase().includes(f) || (b.billNo || '').toLowerCase().includes(f));
     }
 
     billEmpty.style.display = bills.length ? 'none' : 'block';
@@ -603,6 +886,9 @@
         <div class="qc-actions">
           <button class="qc-btn qc-btn-print" data-action="view" data-billno="${b.billNo}">
             <i class="fa-solid fa-eye"></i> View
+          </button>
+          <button class="qc-btn qc-btn-edit" data-action="edit-bill" data-billno="${b.billNo}">
+            <i class="fa-solid fa-pen"></i> Edit
           </button>
           <button class="qc-btn qc-btn-print" data-action="print-bill" data-billno="${b.billNo}">
             <i class="fa-solid fa-download"></i> PDF
@@ -651,8 +937,9 @@
       <div class="totals-row grand"><span>Grand Total</span><span>${fmtINR(bill.grandTotal)}</span></div>
     `;
 
-    markPaidBtn.dataset.billno = billNo;
+    markPaidBtn.dataset.billno  = billNo;
     printBillBtn.dataset.billno = billNo;
+    editBillBtn.dataset.billno  = billNo;
     markPaidBtn.textContent = bill.status === 'paid' ? '✓ Paid' : 'Mark as Paid';
     markPaidBtn.disabled = bill.status === 'paid';
 
@@ -669,6 +956,8 @@
       showBillDetail(billNo);
       billList.querySelectorAll('.quote-card').forEach(c => c.classList.remove('selected'));
       btn.closest('.quote-card').classList.add('selected');
+    } else if (action === 'edit-bill') {
+      loadBillIntoBuilder(billNo);
     } else if (action === 'print-bill') {
       const b = getBills().find(x => x.billNo === billNo);
       if (b) printDocument(b, 'FINAL BILL');
@@ -678,6 +967,10 @@
   printBillBtn.addEventListener('click', function () {
     const b = getBills().find(x => x.billNo === this.dataset.billno);
     if (b) printDocument(b, 'FINAL BILL');
+  });
+
+  editBillBtn.addEventListener('click', function () {
+    if (this.dataset.billno) loadBillIntoBuilder(this.dataset.billno);
   });
 
   markPaidBtn.addEventListener('click', function () {
@@ -700,8 +993,6 @@
   /* ═══════════════════════════════════════════════════════════════
      PDF / PRINT
      ═══════════════════════════════════════════════════════════════ */
-  const printTemplate = document.getElementById('printTemplate');
-
   function printDocument(data, type) {
     const isQuote = type === 'QUOTATION';
     const docNo   = isQuote ? data.id : data.billNo;
@@ -718,7 +1009,7 @@
       </tr>
     `).join('');
 
-    printTemplate.innerHTML = `
+    const docHTML = `
       <div class="print-doc">
         <div class="print-watermark">${type}</div>
         <div class="print-header">
@@ -800,10 +1091,30 @@
       </div>
     `;
 
-    printTemplate.style.display = 'block';
-    window.print();
-    printTemplate.style.display = 'none';
-    printTemplate.innerHTML = '';
+    const w = window.open('', '_blank');
+    if (!w) {
+      showToast('Allow pop-ups to download the PDF.', 'error');
+      return;
+    }
+    w.document.open();
+    w.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${type} ${docNo} — Hethvik Interiors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>${PRINT_STYLES}</style>
+</head>
+<body>${docHTML}</body>
+</html>`);
+    w.document.close();
+    w.onload = function () {
+      w.focus();
+      w.print();
+      w.close();
+    };
   }
 
   /* ═══════════════════════════════════════════════════════════════
