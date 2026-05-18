@@ -7,7 +7,7 @@
    js/login.js (getQuotes/getBills/getProjects) keep working unchanged.
 
    Model:
-   - upsert*/delete* update the in-memory cache SYNCHRONOUSLY and write
+   - upsert and delete ops update the in-memory cache SYNCHRONOUSLY and write
      one document to Firestore (fire-and-forget). The synchronous cache
      update is what lets callers read back their own write immediately
      (e.g. convertToBill → showBillDetail in the same tick).

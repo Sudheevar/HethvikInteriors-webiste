@@ -200,7 +200,7 @@
      DATA LAYER  (Firestore-backed cache — see js/data.js)
 
      Reads stay synchronous (cache slice). Writes are per-document
-     upsert*/delete* ops that update the cache synchronously and push
+     upsert/delete ops that update the cache synchronously and push
      one doc to Firestore; onSnapshot reconciles + re-renders.
      ═══════════════════════════════════════════════════════════════ */
   function getQuotes()   { return window.fbData ? window.fbData.getQuotes()   : []; }
