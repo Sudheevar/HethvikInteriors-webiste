@@ -10,8 +10,8 @@ Resume doc for a fresh session. Plan: `2026-05-19-firebase-cloud-images.md`
 |-------|-------|
 | 0 — Firebase console setup | ✅ Done by user |
 | 1 — Firebase wiring + Auth | ✅ Done, committed, **login verified working** |
-| 2 — Async data layer (Firestore) | ✅ Code done & pushed — **awaiting user manual verification** |
-| 3 — Image upload | ⬜ NOT STARTED — start here (after Phase 2 verified) |
+| 2 — Async data layer (Firestore) | ✅ **DONE — user-verified working on live site** (incl. cross-device sync, logout, re-login, no re-import) |
+| 3 — Image upload | ⬜ **NOT STARTED — start here.** Blocked only on the Storage decision (see below) |
 | 4 — Embed images in PDF | ⬜ pending |
 | 5 — Verification | ⬜ pending |
 
@@ -20,11 +20,34 @@ Commits on `feature/firebase-cloud-images` (all pushed):
 - Phase 1 (auth) → `afd2b34`
 - progress doc → `d659200`
 - Phase 2 (Firestore data layer) → `69a7518`
+- progress doc (Phase 2 done) → `cb2e13d`
+- **Phase 2 post-verification fixes** (found during user testing):
+  - `71fd51f` — `*/` inside a block comment closed it early → whole
+    script dead (Sign In / password toggle did nothing). Rule learned:
+    never write `*/` in a comment; grep `\*/` after editing JS.
+  - `379d3f0` — intermittent all-collections `permission-denied`:
+    listeners attached before the auth token reached Firestore (a
+    permission-denied listen is TERMINAL). Fix: `_awaitAuthReady()`
+    before subscribing + bounded auto-resubscribe on permission-denied.
+  - `6fe82f7` — stray error toast on logout: listeners not torn down.
+    Fix: `fbData.stop()` (called from login.js `!user` branch) detaches
+    listeners, clears caches, resets `_startPromise` so re-login
+    re-subscribes; error handler treats logged-out denial as expected.
+  - `0cac3fa` — **data-integrity bug**: re-login re-ran the localStorage
+    import and resurrected records deleted on other devices. Fix:
+    persistent `localStorage['hethvik_cloud_imported']` guard (import
+    runs at most once per browser) + authoritative `limit(1).get()`
+    Firestore-empty check instead of trusting the in-memory cache.
+  - (also: user had to manually **Publish** `firestore.rules` in the
+    Firebase console — no CLI deploy in this static-site setup. Rules
+    are correct; this was a one-time console action.)
 
-> **If Phase 2 verification passed:** proceed to Phase 3 (summary below;
-> full detail in the plan doc). First decide Storage (Blaze + $1 budget)
-> vs Cloudinary, then add `firebase-storage-compat.js` + `storage` to
-> `window.fb` and `storage.rules` in console.
+> **Phase 2 is complete and verified.** Proceed to Phase 3 (summary
+> below; full detail in the plan doc). Phase 3 is blocked ONLY on the
+> user's Storage decision: **Firebase Storage (Blaze plan + $1 budget
+> alert)** vs **Cloudinary free tier**. Ask this first, then add
+> `firebase-storage-compat.js` + `storage` to `window.fb` and publish
+> `storage.rules` in the console.
 
 ## Firebase facts (already created, do not recreate)
 
