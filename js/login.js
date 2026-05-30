@@ -12,6 +12,34 @@
 6. Any changes to scope will be quoted separately.`;
 
   /* ═══════════════════════════════════════════════════════════════
+     MATERIALS & BRAND SPECIFICATION  (source: "brands for website")
+     Standard company brand list, grouped by category. Auto-included
+     on every quotation/bill PDF and previewed in the builder. The
+     line-item Material dropdown (MATERIALS_GROUPS below) reuses these
+     same values. 'Crompton' / 'Great White' are the corrected brand
+     names for the file's 'Cropton' / 'Greate white'.
+     ═══════════════════════════════════════════════════════════════ */
+  const BRAND_SPEC = [
+    { label: 'Plywood Brands',
+      items: ['Green Ply', 'Century Ply', 'Archid Ply', 'Garjan Ply', 'Khidhiki Ply'] },
+    { label: 'Plywood Materials (6 / 12 / 16 / 18 mm)',
+      items: ['MR Grade Ply', 'BWR Ply', 'Marine Ply', 'HDHMR', 'MDF', 'BWP Ply'] },
+    { label: 'Hardware Brands',
+      items: ['Ebco', 'Hafele', 'Blum', 'Hettich', 'Kyzo'] },
+    { label: 'Laminate Brands',
+      items: ['Dazzle Berry', 'Marino', 'Century', 'Fine Touch', 'Advance', 'Virgo', 'Decolam', 'Ran Berry', 'Stylam', 'Greenlam'] },
+    { label: 'Laminate Finishes',
+      items: ['Matte Finish', 'Glossy Finish', 'Acrylic', 'Flutted', 'PU Finish', 'Semi Matte'] },
+    { label: 'Glass Types',
+      items: ['Clear Glass', 'Toughened Glass', 'Flutted Glass', 'Tinted Glass', 'Frosted Glass'] },
+    { label: 'Electrical Brands',
+      items: ['Philips', 'Havells', 'Wipro', 'Crompton', 'GM', 'Great White'] },
+  ];
+
+  const BRAND_SPEC_NOTE = 'Brands are considered by default and may be ' +
+    'modified as per discussions, if required, with applicable costing.';
+
+  /* ═══════════════════════════════════════════════════════════════
      PRINT STYLESHEET (used by the standalone print window)
      ═══════════════════════════════════════════════════════════════ */
   const PRINT_STYLES = `
@@ -192,6 +220,44 @@
     color: #aaa;
     border-top: 0.5pt solid #ddd;
     padding-top: 3mm;
+  }
+  .print-spec {
+    border-top: 1pt solid #e0e0e0;
+    padding-top: 5mm;
+    margin-top: 5mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-spec h4 {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    margin: 0 0 3mm;
+  }
+  .print-spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+  .print-spec-table td {
+    padding: 1.6mm 3mm;
+    border-bottom: 0.5pt solid #eee;
+    color: #2a2a2a;
+    vertical-align: top;
+  }
+  .print-spec-table tbody tr:nth-child(even) td { background: #fafafa; }
+  .print-spec-table .bs-cat {
+    width: 38%;
+    font-weight: 600;
+    color: #8a7430;
+  }
+  .print-spec-note {
+    font-size: 7.5pt;
+    color: #666;
+    line-height: 1.6;
+    margin: 3mm 0 0;
+    font-style: italic;
   }
   @page { size: A4; margin: 0; }
   `;
@@ -454,22 +520,35 @@
     }
   ];
 
+  // Brand groups (Ply / Laminates / Finishes / Hardware / Glass /
+  // Electrical) come from the company brand spec (see BRAND_SPEC above);
+  // Flooring & Paint/Wall are kept from the original curated list.
   const MATERIALS_GROUPS = [
     {
       label: 'Board / Ply',
-      options: ['Commercial Ply', 'BWP Ply (Waterproof)', 'Greenply Standard', 'Greenply Gold', 'Architect Ply']
+      options: ['Green Ply', 'Century Ply', 'Archid Ply', 'Garjan Ply', 'Khidhiki Ply',
+        'MR Grade Ply', 'BWR Ply', 'Marine Ply', 'HDHMR', 'MDF', 'BWP Ply']
     },
     {
       label: 'Laminates',
-      options: ['Merino Standard Laminate', 'Merino Premium Laminate', 'Greenlam Standard', 'Greenlam Premium', 'High Gloss Laminate', 'Matte Laminate']
+      options: ['Dazzle Berry', 'Marino', 'Century', 'Fine Touch', 'Advance', 'Virgo',
+        'Decolam', 'Ran Berry', 'Stylam', 'Greenlam']
+    },
+    {
+      label: 'Laminate Finishes',
+      options: ['Matte Finish', 'Glossy Finish', 'Acrylic', 'Flutted', 'PU Finish', 'Semi Matte']
     },
     {
       label: 'Hardware',
-      options: ['Hettich Standard', 'Hettich Premium', 'Hafele Standard', 'Hafele Premium', 'Ebco Standard']
+      options: ['Ebco', 'Hafele', 'Blum', 'Hettich', 'Kyzo']
     },
     {
       label: 'Glass',
-      options: ['Plain Glass', 'Frosted Glass', 'Tinted Glass', 'Fluted Glass', 'Mirror']
+      options: ['Clear Glass', 'Toughened Glass', 'Flutted Glass', 'Tinted Glass', 'Frosted Glass']
+    },
+    {
+      label: 'Electrical',
+      options: ['Philips', 'Havells', 'Wipro', 'Crompton', 'GM', 'Great White']
     },
     {
       label: 'Flooring',
@@ -1216,6 +1295,17 @@
           <p>${data.notes.replace(/\n/g, '<br>')}</p>
         </div>` : ''}
 
+        <div class="print-spec">
+          <h4>Materials &amp; Brand Specifications</h4>
+          <table class="print-spec-table">
+            <tbody>
+              ${BRAND_SPEC.map(g =>
+                `<tr><td class="bs-cat">${g.label}</td><td>${g.items.join(', ')}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <p class="print-spec-note">${BRAND_SPEC_NOTE}</p>
+        </div>
+
         <div class="print-footer">
           <span>Hethvik Interiors &bull; Kada Agrahara, Bangalore &ndash; 562125</span>
           <span>This is a computer-generated ${type.toLowerCase()}.</span>
@@ -1451,6 +1541,19 @@
     const tabBtn = document.querySelector(`.admin-tab[data-tab="${name}"]`);
     if (tabBtn) tabBtn.click();
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     MATERIALS & BRAND SPEC — builder preview (static, render once)
+     ═══════════════════════════════════════════════════════════════ */
+  function renderBrandSpec() {
+    const body = document.getElementById('brandSpecBody');
+    const note = document.getElementById('brandSpecNote');
+    if (!body) return;
+    body.innerHTML = BRAND_SPEC.map(g =>
+      `<tr><td class="bs-cat">${g.label}</td><td>${g.items.join(', ')}</td></tr>`).join('');
+    if (note) note.textContent = BRAND_SPEC_NOTE;
+  }
+  renderBrandSpec();
 
   /* ═══════════════════════════════════════════════════════════════
      REACTIVE RE-RENDER (called by js/data.js onSnapshot)

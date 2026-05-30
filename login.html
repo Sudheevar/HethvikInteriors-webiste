@@ -187,6 +187,27 @@
             </div>
           </div>
 
+          <!-- Materials & Brand Specification (auto-added to every PDF) -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Materials &amp; Brand Specification</p>
+            <p class="brand-spec-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              This standard brand specification is automatically included in every quotation &amp; bill PDF.
+            </p>
+            <div class="items-table-wrap">
+              <table class="items-table brand-spec-table">
+                <thead>
+                  <tr>
+                    <th style="width:38%">Category</th>
+                    <th>Brands / Options</th>
+                  </tr>
+                </thead>
+                <tbody id="brandSpecBody"><!-- rows injected by JS --></tbody>
+              </table>
+            </div>
+            <p class="brand-spec-note" id="brandSpecNote"></p>
+          </div>
+
           <!-- Actions -->
           <div class="builder-actions">
             <button class="btn btn-gold" id="saveQuoteBtn">
