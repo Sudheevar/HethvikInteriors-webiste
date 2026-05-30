@@ -840,3 +840,27 @@
 
   .admin-nav-right .admin-logout span { display: none; }
 }
+
+/* ─── Materials & Brand Specification (builder preview) ──────── */
+.brand-spec-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-bottom: 0.75rem;
+}
+.brand-spec-hint i { color: var(--gold); }
+.brand-spec-table td { font-size: 0.8rem; padding: 0.45rem 0.55rem; }
+.brand-spec-table td.bs-cat {
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.brand-spec-note {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--gray-500);
+  margin-top: 0.6rem;
+  line-height: 1.5;
+}
