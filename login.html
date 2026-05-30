@@ -176,14 +176,11 @@
             </div>
           </div>
 
-          <!-- Terms -->
+          <!-- Additional Notes (per-quote; standard T&C added automatically) -->
           <div class="builder-section">
-            <p class="section-eyebrow">Terms &amp; Conditions / Notes</p>
+            <p class="section-eyebrow">Additional Notes (optional)</p>
             <div class="form-group">
-              <textarea id="qNotes" rows="5" placeholder="1. This quotation is valid for 30 days from the date of issue.
-2. 50% advance payment required to commence work.
-3. Material prices subject to market variation.
-4. GST applicable as per government norms."></textarea>
+              <textarea id="qNotes" rows="4" placeholder="Any notes specific to this quotation… The full standard Terms &amp; Conditions are added to the PDF automatically."></textarea>
             </div>
           </div>
 
@@ -206,6 +203,19 @@
               </table>
             </div>
             <p class="brand-spec-note" id="brandSpecNote"></p>
+          </div>
+
+          <!-- Standard Terms & Conditions (auto-added to every PDF) -->
+          <div class="builder-section">
+            <p class="section-eyebrow">Standard Terms &amp; Conditions</p>
+            <p class="brand-spec-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              These standard terms are automatically included on every quotation &amp; bill PDF.
+            </p>
+            <details class="terms-preview">
+              <summary>Preview standard Terms &amp; Conditions</summary>
+              <div class="terms-preview-body" id="fullTermsPreview"><!-- injected by JS --></div>
+            </details>
           </div>
 
           <!-- Actions -->
@@ -466,6 +476,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="js/firebase-init.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/terms-data.js"></script>
 
   <script src="js/login.js"></script>
 

@@ -4,12 +4,10 @@
   /* ═══════════════════════════════════════════════════════════════
      CONSTANTS
      ═══════════════════════════════════════════════════════════════ */
-  const DEFAULT_TERMS = `1. This quotation is valid for 30 days from the date of issue.
-2. 50% advance payment required to commence work.
-3. Balance payment due upon project completion.
-4. Material prices subject to market variation.
-5. GST applicable as per government norms.
-6. Any changes to scope will be quoted separately.`;
+  // Per-quote "Additional Notes" default. The full standard Terms &
+  // Conditions now live in js/terms-data.js (window.HETHVIK_TERMS) and
+  // are printed on every PDF automatically, so this starts empty.
+  const DEFAULT_TERMS = '';
 
   /* ═══════════════════════════════════════════════════════════════
      MATERIALS & BRAND SPECIFICATION  (source: "brands for website")
@@ -258,6 +256,32 @@
     line-height: 1.6;
     margin: 3mm 0 0;
     font-style: italic;
+  }
+  .print-terms-full {
+    border-top: 1pt solid #e0e0e0;
+    padding-top: 5mm;
+    margin-top: 5mm;
+    position: relative;
+    z-index: 1;
+  }
+  .print-terms-full > h4 {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #C9A84C;
+    margin: 0 0 3mm;
+  }
+  .print-terms-full .ft-h {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 2.5mm 0 0.8mm;
+  }
+  .print-terms-full .ft-l {
+    font-size: 7.5pt;
+    color: #555;
+    line-height: 1.55;
+    margin: 0 0 0.4mm;
   }
   @page { size: A4; margin: 0; }
   `;
@@ -1291,7 +1315,7 @@
 
         ${data.notes ? `
         <div class="print-terms">
-          <h4>Terms &amp; Conditions</h4>
+          <h4>Additional Notes</h4>
           <p>${data.notes.replace(/\n/g, '<br>')}</p>
         </div>` : ''}
 
@@ -1304,6 +1328,11 @@
             </tbody>
           </table>
           <p class="print-spec-note">${BRAND_SPEC_NOTE}</p>
+        </div>
+
+        <div class="print-terms-full">
+          <h4>Terms &amp; Conditions</h4>
+          ${fullTermsHTML()}
         </div>
 
         <div class="print-footer">
@@ -1554,6 +1583,33 @@
     if (note) note.textContent = BRAND_SPEC_NOTE;
   }
   renderBrandSpec();
+
+  /* ═══════════════════════════════════════════════════════════════
+     STANDARD TERMS & CONDITIONS — render window.HETHVIK_TERMS as HTML
+     (shared by the PDF and the builder's collapsible preview)
+     ═══════════════════════════════════════════════════════════════ */
+  function escHTML(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function fullTermsHTML() {
+    const text = (typeof window.HETHVIK_TERMS === 'string') ? window.HETHVIK_TERMS : '';
+    if (!text) return '';
+    const isHeading = (l) =>
+      /:$/.test(l) || /^(Interior Painting Prices|Exterior Painting Prices|Brands considered)/.test(l);
+    return text.split('\n').map(raw => {
+      const l = raw.trim();
+      if (!l) return '';
+      return isHeading(l)
+        ? `<p class="ft-h">${escHTML(l.replace(/:$/, ''))}</p>`
+        : `<p class="ft-l">${escHTML(l)}</p>`;
+    }).join('');
+  }
+
+  (function renderFullTermsPreview() {
+    const el = document.getElementById('fullTermsPreview');
+    if (el) el.innerHTML = fullTermsHTML();
+  })();
 
   /* ═══════════════════════════════════════════════════════════════
      REACTIVE RE-RENDER (called by js/data.js onSnapshot)
