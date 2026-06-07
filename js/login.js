@@ -1342,13 +1342,7 @@
       </div>
     `;
 
-    const w = window.open('', '_blank');
-    if (!w) {
-      showToast('Allow pop-ups to download the PDF.', 'error');
-      return;
-    }
-    w.document.open();
-    w.document.write(`<!DOCTYPE html>
+    const fullHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1356,16 +1350,76 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>${PRINT_STYLES}</style>
+<style>${PRINT_STYLES}
+/* PDF-render overrides: per-page margins come from html2pdf, so drop the
+   doc padding; neutralise fixed-position elements that don't paginate. */
+.print-doc { padding: 0 !important; }
+.print-watermark { display: none !important; }
+.print-footer { position: static !important; left: auto !important; right: auto !important; margin-top: 10mm !important; }
+tr, .ft-h, .print-totals-box, .print-client-section, .print-spec-table tr { page-break-inside: avoid; }
+</style>
 </head>
 <body>${docHTML}</body>
-</html>`);
-    w.document.close();
-    w.onload = function () {
-      w.focus();
-      w.print();
-      w.close();
+</html>`;
+
+    const safe = (s) => String(s || 'document').replace(/[^\w.-]+/g, '_');
+    const filename = `${safe(type)}_${safe(docNo)}.pdf`;
+
+    // Fallback: if the PDF library failed to load (e.g. offline), use the
+    // old print-window so the feature still works.
+    if (typeof html2pdf === 'undefined') {
+      const w = window.open('', '_blank');
+      if (!w) { showToast('Allow pop-ups to download the PDF.', 'error'); return; }
+      w.document.open();
+      w.document.write(fullHTML);
+      w.document.close();
+      w.onload = function () { w.focus(); w.print(); w.close(); };
+      return;
+    }
+
+    // Direct download: render the document in an isolated off-screen iframe,
+    // then rasterise it into a multi-page A4 PDF and save it.
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText =
+      'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;opacity:0;';
+    document.body.appendChild(iframe);
+
+    const idoc = iframe.contentWindow.document;
+    idoc.open();
+    idoc.write(fullHTML);
+    idoc.close();
+
+    showToast('Preparing your PDF…', 'info');
+
+    const generate = () => {
+      const el = idoc.querySelector('.print-doc') || idoc.body;
+      html2pdf().set({
+        margin:      [12, 14, 14, 14],          // top, left, bottom, right (mm)
+        filename:    filename,
+        image:       { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:   { mode: ['css', 'legacy'] }
+      }).from(el).save()
+        .then(() => { iframe.remove(); })
+        .catch((err) => {
+          console.error('[pdf] generation failed', err);
+          showToast('Could not generate the PDF. Please try again.', 'error');
+          iframe.remove();
+        });
     };
+
+    // Wait for fonts (and the iframe) to be ready before rasterising.
+    const begin = () => {
+      if (idoc.fonts && idoc.fonts.ready) {
+        idoc.fonts.ready.then(() => setTimeout(generate, 150));
+      } else {
+        setTimeout(generate, 600);
+      }
+    };
+    if (idoc.readyState === 'complete') begin();
+    else iframe.onload = begin;
   }
 
   /* ═══════════════════════════════════════════════════════════════
