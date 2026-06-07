@@ -1377,23 +1377,46 @@ tr, .ft-h, .print-totals-box, .print-client-section, .print-spec-table tr { page
       return;
     }
 
-    // Direct download: render the document in an isolated off-screen iframe,
-    // then rasterise it into a multi-page A4 PDF and save it.
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('aria-hidden', 'true');
-    iframe.style.cssText =
-      'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;opacity:0;';
-    document.body.appendChild(iframe);
+    // Direct download. html2canvas paints blank pages when the source is
+    // inside an off-screen iframe, so we render the document in THIS page
+    // instead — off-screen, with PRINT_STYLES scoped to .pdf-stage so the
+    // admin UI's own styles are untouched — then rasterise to A4.
+    const scopeCss = (css, scope) => css
+      .replace(/\/\*[\s\S]*?\*\//g, '')          // strip comments
+      .replace(/@page[^{]*\{[^}]*\}/g, '')        // @page is irrelevant here
+      .replace(/([^{}]+)\{([^}]*)\}/g, (m, sels, body) => {
+        const scoped = sels.split(',').map(s => {
+          s = s.trim();
+          if (!s) return '';
+          if (s === 'body' || s === 'html') return scope;
+          if (s === '*') return scope + ' *';
+          return scope + ' ' + s;
+        }).filter(Boolean).join(', ');
+        return scoped + '{' + body + '}';
+      });
 
-    const idoc = iframe.contentWindow.document;
-    idoc.open();
-    idoc.write(fullHTML);
-    idoc.close();
+    const stage = document.createElement('div');
+    stage.className = 'pdf-stage';
+    stage.style.cssText = 'position:absolute;left:-10000px;top:0;width:210mm;background:#fff;';
+    stage.innerHTML = docHTML;
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent =
+      scopeCss(PRINT_STYLES, '.pdf-stage') +
+      '.pdf-stage .print-doc{padding:0 !important;}' +
+      '.pdf-stage .print-watermark{display:none !important;}' +
+      '.pdf-stage .print-footer{position:static !important;left:auto !important;right:auto !important;margin-top:10mm !important;}' +
+      '.pdf-stage tr,.pdf-stage .ft-h,.pdf-stage .print-totals-box,.pdf-stage .print-client-section,.pdf-stage .print-spec-table tr{page-break-inside:avoid;}';
+
+    document.head.appendChild(styleEl);
+    document.body.appendChild(stage);
+
+    const cleanup = () => { stage.remove(); styleEl.remove(); };
 
     showToast('Preparing your PDF…', 'info');
 
     const generate = () => {
-      const el = idoc.querySelector('.print-doc') || idoc.body;
+      const el = stage.querySelector('.print-doc') || stage;
       html2pdf().set({
         margin:      [12, 14, 14, 14],          // top, left, bottom, right (mm)
         filename:    filename,
@@ -1402,24 +1425,20 @@ tr, .ft-h, .print-totals-box, .print-client-section, .print-spec-table tr { page
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:   { mode: ['css', 'legacy'] }
       }).from(el).save()
-        .then(() => { iframe.remove(); })
+        .then(cleanup)
         .catch((err) => {
           console.error('[pdf] generation failed', err);
           showToast('Could not generate the PDF. Please try again.', 'error');
-          iframe.remove();
+          cleanup();
         });
     };
 
-    // Wait for fonts (and the iframe) to be ready before rasterising.
-    const begin = () => {
-      if (idoc.fonts && idoc.fonts.ready) {
-        idoc.fonts.ready.then(() => setTimeout(generate, 150));
-      } else {
-        setTimeout(generate, 600);
-      }
-    };
-    if (idoc.readyState === 'complete') begin();
-    else iframe.onload = begin;
+    // Fonts are already loaded by login.html; wait for readiness, then render.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => setTimeout(generate, 50));
+    } else {
+      setTimeout(generate, 300);
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════════
