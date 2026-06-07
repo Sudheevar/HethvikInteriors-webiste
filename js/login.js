@@ -1365,89 +1365,33 @@ tr, .ft-h, .print-totals-box, .print-client-section, .print-spec-table tr { page
     const safe = (s) => String(s || 'document').replace(/[^\w.-]+/g, '_');
     const filename = `${safe(type)}_${safe(docNo)}.pdf`;
 
-    // Fallback: if the PDF library failed to load (e.g. offline), use the
-    // old print-window so the feature still works.
-    if (typeof html2pdf === 'undefined') {
-      const w = window.open('', '_blank');
-      if (!w) { showToast('Allow pop-ups to download the PDF.', 'error'); return; }
-      w.document.open();
-      w.document.write(fullHTML);
-      w.document.close();
-      w.onload = function () { w.focus(); w.print(); w.close(); };
+    // Direct download via native jsPDF text rendering (js/pdf-native.js).
+    // No html2canvas/screenshots, so the PDF can't come out blank and text
+    // stays selectable. Falls back to the print window if jsPDF didn't load.
+    if (window.jspdf && window.jspdf.jsPDF && typeof window.buildHethvikPdf === 'function') {
+      try {
+        const pdfDoc = window.buildHethvikPdf({
+          type, docNo, docDate, isQuote, data,
+          brandSpec: BRAND_SPEC,
+          brandNote: BRAND_SPEC_NOTE,
+          terms: (typeof window.HETHVIK_TERMS === 'string') ? window.HETHVIK_TERMS : ''
+        });
+        pdfDoc.save(filename);
+        showToast('PDF downloaded.', 'success');
+      } catch (err) {
+        console.error('[pdf] native generation failed', err);
+        showToast('Could not generate the PDF. Please try again.', 'error');
+      }
       return;
     }
 
-    // Direct download. html2canvas paints blank pages when the source is
-    // inside an off-screen iframe, so we render the document in THIS page
-    // instead — off-screen, with PRINT_STYLES scoped to .pdf-stage so the
-    // admin UI's own styles are untouched — then rasterise to A4.
-    const scopeCss = (css, scope) => css
-      .replace(/\/\*[\s\S]*?\*\//g, '')          // strip comments
-      .replace(/@page[^{]*\{[^}]*\}/g, '')        // @page is irrelevant here
-      .replace(/([^{}]+)\{([^}]*)\}/g, (m, sels, body) => {
-        const scoped = sels.split(',').map(s => {
-          s = s.trim();
-          if (!s) return '';
-          if (s === 'body' || s === 'html') return scope;
-          if (s === '*') return scope + ' *';
-          return scope + ' ' + s;
-        }).filter(Boolean).join(', ');
-        return scoped + '{' + body + '}';
-      });
-
-    const stage = document.createElement('div');
-    stage.className = 'pdf-stage';
-    stage.style.cssText = 'position:absolute;left:-10000px;top:0;width:210mm;background:#fff;';
-    stage.innerHTML = docHTML;
-
-    const styleEl = document.createElement('style');
-    styleEl.textContent =
-      scopeCss(PRINT_STYLES, '.pdf-stage') +
-      '.pdf-stage .print-doc{padding:0 !important;}' +
-      '.pdf-stage .print-watermark{display:none !important;}' +
-      '.pdf-stage .print-footer{position:static !important;left:auto !important;right:auto !important;margin-top:10mm !important;}' +
-      '.pdf-stage tr,.pdf-stage .ft-h,.pdf-stage .print-totals-box,.pdf-stage .print-client-section,.pdf-stage .print-spec-table tr{page-break-inside:avoid;}';
-
-    document.head.appendChild(styleEl);
-    document.body.appendChild(stage);
-
-    const cleanup = () => { stage.remove(); styleEl.remove(); };
-
-    showToast('Preparing your PDF…', 'info');
-
-    const generate = () => {
-      const el = stage.querySelector('.print-doc') || stage;
-      // html2canvas renders the whole document into ONE canvas. Tall multi-page
-      // docs at scale 2 can blow past browser canvas limits (esp. iOS Safari,
-      // ~16M px / 8192px max), which silently produces a BLANK canvas. Pick the
-      // largest scale (<=2) that keeps the canvas within safe bounds.
-      const w = el.scrollWidth  || 794;
-      const h = el.scrollHeight || 1123;
-      const MAX_AREA = 16e6, MAX_DIM = 8192;
-      let scale = Math.min(2, MAX_DIM / w, MAX_DIM / h, Math.sqrt(MAX_AREA / (w * h)));
-      scale = Math.max(1, scale);
-      html2pdf().set({
-        margin:      [12, 14, 14, 14],          // top, left, bottom, right (mm)
-        filename:    filename,
-        image:       { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: scale, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:   { mode: ['css', 'legacy'] }
-      }).from(el).save()
-        .then(cleanup)
-        .catch((err) => {
-          console.error('[pdf] generation failed', err);
-          showToast('Could not generate the PDF. Please try again.', 'error');
-          cleanup();
-        });
-    };
-
-    // Fonts are already loaded by login.html; wait for readiness, then render.
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => setTimeout(generate, 50));
-    } else {
-      setTimeout(generate, 300);
-    }
+    // Fallback: open a print window (lets the browser "Save as PDF").
+    const w = window.open('', '_blank');
+    if (!w) { showToast('Allow pop-ups to download the PDF.', 'error'); return; }
+    w.document.open();
+    w.document.write(fullHTML);
+    w.document.close();
+    w.onload = function () { w.focus(); w.print(); w.close(); };
   }
 
   /* ═══════════════════════════════════════════════════════════════
