@@ -1417,11 +1417,20 @@ tr, .ft-h, .print-totals-box, .print-client-section, .print-spec-table tr { page
 
     const generate = () => {
       const el = stage.querySelector('.print-doc') || stage;
+      // html2canvas renders the whole document into ONE canvas. Tall multi-page
+      // docs at scale 2 can blow past browser canvas limits (esp. iOS Safari,
+      // ~16M px / 8192px max), which silently produces a BLANK canvas. Pick the
+      // largest scale (<=2) that keeps the canvas within safe bounds.
+      const w = el.scrollWidth  || 794;
+      const h = el.scrollHeight || 1123;
+      const MAX_AREA = 16e6, MAX_DIM = 8192;
+      let scale = Math.min(2, MAX_DIM / w, MAX_DIM / h, Math.sqrt(MAX_AREA / (w * h)));
+      scale = Math.max(1, scale);
       html2pdf().set({
         margin:      [12, 14, 14, 14],          // top, left, bottom, right (mm)
         filename:    filename,
         image:       { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: { scale: scale, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:   { mode: ['css', 'legacy'] }
       }).from(el).save()
