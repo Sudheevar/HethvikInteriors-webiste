@@ -714,7 +714,7 @@
   align-items: center;
   gap: 2.5rem;
   width: max-content;
-  animation: marquee 22s linear infinite;
+  animation: marquee 45s linear infinite;
 }
 
 .marquee-wrapper:hover .marquee-track { animation-play-state: paused; }
@@ -724,33 +724,51 @@
   to   { transform: translateX(-50%); }
 }
 
+/* Image logos sit plainly on the cream strip (no chip), like the
+   construction-site marquee: original colours, slightly dimmed, full
+   colour + a small lift on hover. */
 .partner-logo {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem 2.25rem;
-  border-radius: 50px;
-  background: linear-gradient(160deg, #ffffff 0%, #f7f4ef 100%);
-  border: 1px solid rgba(212,205,188,0.8);
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--gray-500);
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  transition: border-color var(--t-mid), color var(--t-mid),
-              box-shadow var(--t-mid), transform var(--t-mid);
-  min-width: 150px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+  height: 60px;
+  min-width: 120px;
+  padding: 0 0.75rem;
+  text-decoration: none;
+  transition: transform var(--t-mid), opacity var(--t-mid);
 }
 
-.partner-logo:hover {
-  border-color: rgba(201,168,76,0.5);
-  color: var(--charcoal);
-  box-shadow: 0 6px 24px rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.9);
-  transform: translateY(-3px);
+.partner-logo img {
+  max-height: 46px;
+  max-width: 150px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.82;
+  transition: opacity var(--t-mid), transform var(--t-mid);
 }
+
+.partner-logo:hover { transform: translateY(-3px); }
+.partner-logo:hover img { opacity: 1; }
+
+/* Single-colour (white) source logos recoloured dark so they read on
+   the light strip — e.g. Ebco. brightness(0) keeps the alpha shape. */
+.partner-logo.is-mono img { filter: brightness(0); opacity: 0.5; }
+.partner-logo.is-mono:hover img { opacity: 0.78; }
+
+/* Text fallback for brands without an obtainable logo — e.g. Merino. */
+.partner-logo--text {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  white-space: nowrap;
+  transition: color var(--t-mid), transform var(--t-mid);
+}
+.partner-logo--text:hover { color: var(--charcoal); }
 
 /* ══════════════════════════════════════════════════════════════════
    CONTACT SECTION — dark with orbs + noise
