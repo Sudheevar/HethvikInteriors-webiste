@@ -563,10 +563,6 @@
       options: ['Matte Finish', 'Glossy Finish', 'Acrylic', 'Flutted', 'PU Finish', 'Semi Matte']
     },
     {
-      label: 'Hardware',
-      options: ['Ebco', 'Hafele', 'Blum', 'Hettich', 'Kyzo']
-    },
-    {
       label: 'Glass',
       options: ['Clear Glass', 'Toughened Glass', 'Flutted Glass', 'Tinted Glass', 'Frosted Glass']
     },
@@ -583,6 +579,25 @@
       options: ['Asian Paints Premium Emulsion', 'Royale Luxury Emulsion', 'Textured Paint', 'Wallpaper', 'Wall Cladding']
     }
   ];
+
+  // Hardware is its own line-item field (split out from materials). Same
+  // brands previously grouped under Materials > Hardware.
+  const HARDWARE_GROUPS = [
+    { label: 'Hardware', options: ['Ebco', 'Hafele', 'Blum', 'Hettich', 'Kyzo'] }
+  ];
+
+  // Normalise legacy/new item shapes -> arrays. Old saved items only have a
+  // single `material` string and no `hardware`.
+  function itemMaterials(it) {
+    if (Array.isArray(it.materials)) return it.materials.filter(Boolean);
+    if (it.material) return [it.material];
+    return [];
+  }
+  function itemHardware(it) {
+    if (Array.isArray(it.hardware)) return it.hardware.filter(Boolean);
+    if (it.hardware) return [it.hardware];
+    return [];
+  }
 
   // Reusable dropdown that also supports a free-text "Custom…" entry.
   // Returns the wrapper element with a `.getValue()` method attached.
@@ -651,12 +666,104 @@
     return wrap;
   }
 
+  // Multi-select tag/chip field. Pick from the dropdown (grouped) to add a
+  // chip; "Custom…" reveals a text box. Chips are removable. getValues() ->
+  // array of strings. Used for Material and Hardware line-item fields.
+  function makeMultiChoiceField(config) {
+    const wrap = document.createElement('div');
+    wrap.className = 'multichoice-field' + (config.className ? ' ' + config.className : '');
+
+    const chips = document.createElement('div');
+    chips.className = 'mc-chips';
+
+    const selected = [];
+
+    function renderChips() {
+      chips.innerHTML = '';
+      selected.forEach((val, idx) => {
+        const chip = document.createElement('span');
+        chip.className = 'mc-chip';
+        chip.textContent = val;
+        const x = document.createElement('button');
+        x.type = 'button'; x.className = 'mc-chip-x'; x.innerHTML = '&times;';
+        x.setAttribute('aria-label', 'Remove ' + val);
+        x.addEventListener('click', () => { selected.splice(idx, 1); renderChips(); });
+        chip.appendChild(x);
+        chips.appendChild(chip);
+      });
+    }
+
+    function addValue(v) {
+      v = (v || '').trim();
+      if (!v) return;
+      if (selected.indexOf(v) === -1) { selected.push(v); renderChips(); }
+    }
+
+    const sel = document.createElement('select');
+    sel.className = 'mc-add';
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = config.placeholder || '+ Add…';
+    sel.appendChild(ph);
+    (config.groups || []).forEach(g => {
+      const og = document.createElement('optgroup');
+      og.label = g.label;
+      g.options.forEach(o => {
+        const op = document.createElement('option');
+        op.value = o; op.textContent = o;
+        og.appendChild(op);
+      });
+      sel.appendChild(og);
+    });
+    const customOpt = document.createElement('option');
+    customOpt.value = CUSTOM_OPT; customOpt.textContent = CUSTOM_OPT;
+    sel.appendChild(customOpt);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'custom-in mc-custom';
+    input.placeholder = config.customPlaceholder || 'Type & Enter…';
+    input.style.display = 'none';
+
+    function commitCustom() {
+      if (input.value.trim()) { addValue(input.value); input.value = ''; }
+      input.style.display = 'none';
+      sel.value = '';
+    }
+    sel.addEventListener('change', () => {
+      if (sel.value === CUSTOM_OPT) {
+        input.style.display = '';
+        input.focus();
+      } else if (sel.value) {
+        addValue(sel.value);
+        sel.value = '';
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commitCustom(); }
+    });
+    input.addEventListener('blur', commitCustom);
+
+    (config.values || []).forEach(addValue);
+    renderChips();
+
+    const adder = document.createElement('div');
+    adder.className = 'mc-adder';
+    adder.appendChild(sel);
+    adder.appendChild(input);
+    wrap.appendChild(chips);
+    wrap.appendChild(adder);
+
+    wrap.getValues = function () { return selected.slice(); };
+    return wrap;
+  }
+
   function addItemRow(data = {}) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td></td>
       <td></td>
       <td><input type="number" class="sqft-in" value="${data.sqft || ''}" min="0" placeholder="0"></td>
+      <td></td>
       <td></td>
       <td><input type="number" class="price-in" value="${data.pricePerSqft || ''}" min="0" placeholder="0"></td>
       <td class="total-cell">₹0</td>
@@ -668,8 +775,15 @@
     tr.cells[1].appendChild(makeChoiceField({
       groups: DESCRIPTION_GROUPS, value: data.description, placeholder: 'Custom description…', className: 'desc-field'
     }));
-    tr.cells[3].appendChild(makeChoiceField({
-      groups: MATERIALS_GROUPS, value: data.material, placeholder: 'Custom material…', className: 'material-field'
+    tr.cells[3].appendChild(makeMultiChoiceField({
+      groups: MATERIALS_GROUPS, values: itemMaterials(data),
+      placeholder: '+ Add material…', customPlaceholder: 'Custom material & Enter…',
+      className: 'material-field'
+    }));
+    tr.cells[4].appendChild(makeMultiChoiceField({
+      groups: HARDWARE_GROUPS, values: itemHardware(data),
+      placeholder: '+ Add hardware…', customPlaceholder: 'Custom hardware & Enter…',
+      className: 'hardware-field'
     }));
 
     tr.querySelector('.del-item-btn').addEventListener('click', () => {
@@ -709,11 +823,16 @@
       const placeF = tr.querySelector('.place-field');
       const descF  = tr.querySelector('.desc-field');
       const matF   = tr.querySelector('.material-field');
+      const hwF    = tr.querySelector('.hardware-field');
+      const materials = matF ? matF.getValues() : [];
+      const hardware  = hwF  ? hwF.getValues()  : [];
       return {
         place:        placeF ? placeF.getValue() : '',
         description:  descF  ? descF.getValue()  : '',
         sqft,
-        material:     matF   ? matF.getValue()   : '',
+        materials,
+        hardware,
+        material:     materials.join(', '), // legacy/backward-compat string
         pricePerSqft: price,
         total:        sqft * price,
       };
@@ -1132,7 +1251,8 @@
         <td>${item.place}</td>
         <td>${item.description || '—'}</td>
         <td>${item.sqft}</td>
-        <td>${item.material}</td>
+        <td>${itemMaterials(item).join(', ') || '—'}</td>
+        <td>${itemHardware(item).join(', ') || '—'}</td>
         <td>${fmtINR(item.pricePerSqft)}</td>
         <td class="total-cell">${fmtINR(item.total)}</td>
       </tr>
@@ -1237,7 +1357,8 @@
         <td>${item.place}</td>
         <td>${item.description || '—'}</td>
         <td>${item.sqft} sqft</td>
-        <td>${item.material}</td>
+        <td>${itemMaterials(item).join(', ') || '—'}</td>
+        <td>${itemHardware(item).join(', ') || '—'}</td>
         <td style="text-align:right">₹${(item.pricePerSqft || 0).toLocaleString('en-IN')}</td>
         <td style="text-align:right" class="total-td">₹${Math.round(item.total).toLocaleString('en-IN')}</td>
       </tr>
@@ -1284,6 +1405,7 @@
               <th>Description</th>
               <th>Sqft</th>
               <th>Material</th>
+              <th>Hardware</th>
               <th style="text-align:right">Rate/Sqft</th>
               <th style="text-align:right">Amount</th>
             </tr>

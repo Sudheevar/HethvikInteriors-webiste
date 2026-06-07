@@ -84,12 +84,13 @@
     /* ── Items table ────────────────────────────────────── */
     const cols = [
       { t: '#',            w: 8,  a: 'left'  },
-      { t: 'Place / Area', w: 28, a: 'left'  },
-      { t: 'Description',  w: 48, a: 'left'  },
-      { t: 'Sqft',         w: 16, a: 'left'  },
-      { t: 'Material',     w: 30, a: 'left'  },
-      { t: 'Rate/Sqft',    w: 24, a: 'right' },
-      { t: 'Amount',       w: 28, a: 'right' },
+      { t: 'Place / Area', w: 24, a: 'left'  },
+      { t: 'Description',  w: 40, a: 'left'  },
+      { t: 'Sqft',         w: 14, a: 'left'  },
+      { t: 'Material',     w: 28, a: 'left'  },
+      { t: 'Hardware',     w: 24, a: 'left'  },
+      { t: 'Rate/Sqft',    w: 22, a: 'right' },
+      { t: 'Amount',       w: 22, a: 'right' },
     ];
     const colX = []; let cx = ML; cols.forEach(c => { colX.push(cx); cx += c.w; });
     const lineH = 4.2, padY = 1.8;
@@ -106,12 +107,15 @@
 
     ensure(15); tableHeader();
     (data.items || []).forEach((it, idx) => {
+      const matStr = Array.isArray(it.materials) ? it.materials.join(', ') : (it.material || '');
+      const hwStr  = Array.isArray(it.hardware)  ? it.hardware.join(', ')  : (it.hardware || '');
       const cells = [
         [String(idx + 1)],
         doc.splitTextToSize(String(it.place || ''), cols[1].w - 3),
         doc.splitTextToSize(String(it.description || '-'), cols[2].w - 3),
         doc.splitTextToSize(String(it.sqft || '') + ' sqft', cols[3].w - 3),
-        doc.splitTextToSize(String(it.material || ''), cols[4].w - 3),
+        doc.splitTextToSize(matStr || '-', cols[4].w - 3),
+        doc.splitTextToSize(hwStr || '-', cols[5].w - 3),
         [money(it.pricePerSqft)],
         [money(it.total)],
       ];
